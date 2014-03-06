@@ -15,7 +15,6 @@ Game.Entity = function(template) {
 				this[key] = properties[i][key];
 			} else if (key === 'name') {
 				this._properties[properties[i][key]] = true;
-				console.log(this._properties);
 			} else if (key === 'group') {
 				this._propertyGroups[properties[i][key]] = true;
 			}
@@ -62,6 +61,10 @@ Game.Entity.prototype.setMap = function(map) {
 	this._map = map;
 };
 
+Game.Entity.prototype.hasProperty = function(property) {
+	return this._properties[property] || this._propertyGroups[property];
+};
+
 //dl is last since level changing is rarer
 Game.Entity.prototype.tryMove = function(dx, dy, dl) {
 	//default dl to 0 if not passed
@@ -73,10 +76,30 @@ Game.Entity.prototype.tryMove = function(dx, dy, dl) {
 	var newY = this._y + dy;
 	var newL = this._l + dl;
 	var tile = this.getMap().getTile(newL,newX,newY);
+	var target = this.getMap().getEntity(newL,newX,newY);
 	if (tile.blocksMove()) {
 		return false;
+	} else if (target) {
+		if (this.hasProperty('PlayerActor')) {
+			target.kill();
+			return true;
+		}
 	} else {
 		this.setPosition(newL,newX,newY);
 		this.getMap().updatePosition(this,oldL,oldX,oldY);
+		return true;
+	}
+};
+
+//kills the entity
+Game.Entity.prototype.kill = function() {
+	this.getMap().removeEntity(this);
+	//add blood tiles 
+	for (var x = -1; x <= 1; x++) {
+		for (var y = -1; y <= 1; y++) {
+			if (Game.randRange(0,1) || (x === 0 && y === 0)) {
+				this.getMap().setTile(Game.Tile.bloodTile, this._l, this._x + x, this._y + y, {sameProperties:true});
+			}
+		}
 	}
 };

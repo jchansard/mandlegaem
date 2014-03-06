@@ -37,9 +37,9 @@ Game.Architect.prototype._generateSingleLevel = function(iterations) {
 	}
 	grassGen.create(function(x,y,v) {
 		if (v === 1) { 
-			tiles[x][y] = Game.Tile.grassTile;	
+			tiles[x][y] = new Game.Tile(Game.Tile.grassTile);	
      	} else { 
-			tiles[x][y] = Game.Tile.groundTile; 
+			tiles[x][y] = new Game.Tile(Game.Tile.groundTile); 
 		}
 	});
 	//generate the trees - 50% chance
@@ -50,7 +50,7 @@ Game.Architect.prototype._generateSingleLevel = function(iterations) {
 	}
 	treeGen.create(function(x,y,v) {
 		if (v === 1) { 
-			tiles[x][y] = Game.Tile.wallTile; 
+			tiles[x][y] = new Game.Tile(Game.Tile.wallTile); 
 		}
 	});
 	
