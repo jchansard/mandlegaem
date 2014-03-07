@@ -1,7 +1,6 @@
 Game.Hashmap = function(numValues){
 	this._numValues = numValues;
 };
-Game.Hashmap.extend(Array);
 
 Game.Hashmap.prototype.add = function(value) {
 	var args = Array.prototype.splice.call(arguments,1);
@@ -26,5 +25,11 @@ Game.Hashmap.prototype._getKey = function(args) {
 	key = key.substr(0,key.length-1);
 	return key;
 };
-
+Game.Hashmap.prototype.getKeysAsArray = function() {
+	var arr = Object.keys(this).slice(1);  //remove _numValues
+	for (var key in arr) {
+		console.log(key);
+	}
+	return arr;
+};
 

@@ -5,18 +5,29 @@ Game.Entity = function(template) {
 	this._x = template['x'] || 0;
 	this._y = template['y'] || 0;
 	this._l = template['l'] || 0;
+	this._skills = template['skills'] || [];
 	this._map = null;
 	this._properties = {};
 	this._propertyGroups = {};
+	this._events = {};
+	this._applySkillPassives();
 	var properties = template['properties'] || [];
 	for (var i = 0; i < properties.length; i++) {
 		for (var key in properties[i]) {
-			if (key !== 'name' && key !== 'group' && key != 'init' && !this.hasOwnProperty(key)) {
+			if (key !== 'name' && key !== 'group' && key !== 'init' && key !== 'events' && !this.hasOwnProperty(key)) {
 				this[key] = properties[i][key];
 			} else if (key === 'name') {
 				this._properties[properties[i][key]] = true;
 			} else if (key === 'group') {
 				this._propertyGroups[properties[i][key]] = true;
+			}
+		}
+		if (properties[i].events !== undefined) {
+			for (var key in properties[i].events) {	
+				if (this._events[key] === undefined) {
+					this._events[key] = [];
+				}
+				this._events[key].push(properties[i].events[key]);
 			}
 		}
 		if (properties[i].init !== undefined) {
@@ -35,6 +46,9 @@ Game.Entity.prototype.getX = function() {
 };
 Game.Entity.prototype.getY = function() {
 	return this._y;
+};
+Game.Entity.prototype.getPosition = function() {
+	return {l: this._l, x: this._x, y: this._y}
 };
 Game.Entity.prototype.getLevel = function() {
 	return this._l;
@@ -65,6 +79,32 @@ Game.Entity.prototype.hasProperty = function(property) {
 	return this._properties[property] || this._propertyGroups[property];
 };
 
+Game.Entity.prototype._applySkillPassives = function() {
+	for (var i = 0; i < this._skills.length; i++) {
+		if (this._skills[i].initPassive !== undefined) {
+			this._skills[i].initPassive.call(this);
+		}
+		if (this._skills[i].events !== undefined) {
+			for (var key in this._skills[i].events) {	
+				if (this._events[key] === undefined) {
+					this._events[key] = [];
+				}
+				this._events[key].push(this._skills[i].events[key]);
+			}
+		}
+	}
+};
+
+Game.Entity.prototype.reactToEvent = function(event) {
+	if (this._events[event] === undefined) {
+		return false;
+	}
+	var args = Array.prototype.slice.call(arguments,1);
+	for (var i = 0; i < this._events[event].length; i++) {
+		this._events[event][i].apply(this,args);
+	}
+};
+
 //dl is last since level changing is rarer
 Game.Entity.prototype.tryMove = function(dx, dy, dl) {
 	//default dl to 0 if not passed
@@ -82,11 +122,13 @@ Game.Entity.prototype.tryMove = function(dx, dy, dl) {
 	} else if (target) {
 		if (this.hasProperty('PlayerActor')) {
 			target.kill();
+			this.reactToEvent('onMove',dx, dy, dl);
 			return true;
 		}
 	} else {
 		this.setPosition(newL,newX,newY);
 		this.getMap().updatePosition(this,oldL,oldX,oldY);
+		this.reactToEvent('onMove', dx, dy, dl);
 		return true;
 	}
 };
@@ -95,11 +137,16 @@ Game.Entity.prototype.tryMove = function(dx, dy, dl) {
 Game.Entity.prototype.kill = function() {
 	this.getMap().removeEntity(this);
 	//add blood tiles 
-	for (var x = -1; x <= 1; x++) {
-		for (var y = -1; y <= 1; y++) {
-			if (Game.randRange(0,1) || (x === 0 && y === 0)) {
-				this.getMap().setTile(Game.Tile.bloodTile, this._l, this._x + x, this._y + y, {sameProperties:true});
+	var tileType = this.getMap().getTile(this._l, this._x, this._y).getType();
+	if (tileType === 'floor') {
+		for (var x = -1; x <= 1; x++) {
+			for (var y = -1; y <= 1; y++) {
+				if (Game.randRange(0,1) || (x === 0 && y === 0)) {
+					this.getMap().setTile(Game.Tile.bloodTile, this._l, this._x + x, this._y + y, {sameProperties:true});
+				}
 			}
 		}
+	} else if (tileType === 'grass') {
+		this.getMap().setTile(Game.Tile.bloodGrass, this._l, this._x, this._y);
 	}
 };

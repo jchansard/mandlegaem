@@ -1,7 +1,7 @@
 Game.Glyph = function(properties) {
 	properties = properties || {};	
 	this._character = properties['character'] || '®';
-	this._fgcolor = (typeof properties['fgcolor'] === 'function') ? properties['fgcolor']() : properties['fgcolor'] || '#F00';
+	this._fgcolor = (typeof properties['fgcolor'] === 'function') ? properties['fgcolor']() : properties['fgcolor'] || '#FFF';
 	this._bgcolor = (typeof properties['bgcolor'] === 'function') ? properties['bgcolor']() : properties['bgcolor'] || '#000'; 
 };
 Game.Glyph.prototype.getChar = function() {

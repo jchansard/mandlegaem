@@ -94,12 +94,14 @@ Game.Screen.gameScreen = {
     	var screenWidth = Game.getScreenWidth();
     	var screenHeight = Game.getScreenHeight();
     	
-    	var visibleTiles = new Game.Hashmap(2);
+    	//var visibleTiles = new Game.Hashmap(2);
+		map.resetVisibleTiles();
         // add all visible tiles to hashmap
-        //TODO: not hardcode sight radius
+        //TODO: maybe make callback own function; check for sight property??
         map.getFOV(player.getLevel()).compute(
-            this._player.getX(), this._player.getY(), 4, function(x, y, radius, visibility) {
-                visibleTiles.add(true,x,y);
+            this._player.getX(), this._player.getY(), this._player.getSightRadius(), function(x, y, radius, visibility) {
+                //visibleTiles.add(true,x,y);
+				map.addVisibleTile(x,y);
                 map.setTileExplored(true,l,x,y);
             });
     	//get the leftmost x coordinate to draw in order to center the player since our map is wider than the screen 
@@ -114,7 +116,7 @@ Game.Screen.gameScreen = {
     			var glyph = tiles[l][x][y];
     			var fg,bg,character;
     			if (map.isTileExplored(l,x,y)) {
-	    			if (visibleTiles.get(x,y)) {
+	    			if (map.getVisibleTiles().get(x,y)) {
 	    				if (entities.get(l,x,y)) {
 		    				glyph = map.getEntity(l,x,y);
 	    				}
