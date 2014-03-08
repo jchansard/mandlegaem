@@ -30,6 +30,9 @@ Game.Map.prototype.getHeight = function() {
 Game.Map.prototype.getEntities = function() {
 	return this._entities;
 };
+Game.Map.prototype.getScheduler = function() {
+	return this._scheduler;
+};
 Game.Map.prototype.getEngine = function() {
 	return this._engine;
 };
@@ -65,14 +68,14 @@ Game.Map.prototype.setTile = function(template,l,x,y,same) {
 	this._tiles[l][x][y] = new Game.Tile(template);
 };
 
-//returns random tile on level. if blocksmove is set, returns tile with specified blocksmove value; defaults to false
-Game.Map.prototype.getRandomTile = function(l,blocksmove) {
-	blocksmove = blocksmove || false;
+//returns random tile on level. if blocksspawn is set, returns tile with specified blocksspawn value; defaults to false
+Game.Map.prototype.getRandomTile = function(l,blocksspawn) {
+	blocksspawn = blocksspawn || false;
 	var x,y;
 	do {
 		x = Game.randRange(0,this._width-1);
 		y = Game.randRange(0,this._height-1);
-	} while(!this._tiles[l][x][y].blocksMove() === blocksmove);
+	} while(!this._tiles[l][x][y].blocksSpawn() === blocksspawn);
 	return {l:l, x:x, y:y};
 };
 
@@ -84,7 +87,7 @@ Game.Map.prototype.getEntity = function(l,x,y) {
 //returns entities in square radius around specified coordinates
 //includeCenter: if true, returns entity @ l,x,y; if false, doesn't
 Game.Map.prototype.getEntitiesInRadius = function(radius, l, x, y, includeCenter) {
-	var entities = [];
+	var entities = [];	
 	for (var key in this._entities) {
 	//TODO: better way to loop through hashmaps
 		if (this._entities[key] instanceof Game.Entity) {
@@ -100,6 +103,17 @@ Game.Map.prototype.getEntitiesInRadius = function(radius, l, x, y, includeCenter
 		}
 	}
 	return entities;
+};
+
+Game.Map.prototype.getDistanceBetween = function(x1,y1,x2,y2) {
+	var line = new ROT.Path.AStar(x2, y2, function(x,y) {
+		return true;
+	});
+	var distance = -1;
+	line.compute(x1, y1, function(x,y) {
+		distance++;
+	});
+	return distance;
 };
 
 //updates the entities hashmap with the entity's current position, or, if it doesn't exist, add it
@@ -118,7 +132,9 @@ Game.Map.prototype.addEntity = function(entity,l,x,y) {
 	this.updatePosition(entity);
 	entity.setMap(this);
 	//TODO: only for actors
-	this._scheduler.add(entity,true);
+	if (entity.hasProperty('PlayerActor')) {
+		this._scheduler.add(entity,true);
+	}
 };
 
 //adds an entity at a random valid position on level l
@@ -137,6 +153,23 @@ Game.Map.prototype.removeEntity = function(entity) {
 	}
 };
 
+//adds actors from scheduler in a (sightradius*2) radius around the player
+//TODO: remove them when they're inactive in their act function
+Game.Map.prototype.updateScheduler = function() {
+	var player = this._player;
+	var pos = player.getPosition();
+	var rad;
+	//sanity check
+	if (player.hasProperty('Sight')) {
+		var rad = (player.getSightRadius() * 2);
+	}
+	else { rad = 10; };
+	var actors = this.getEntitiesInRadius(rad,pos.l,pos.x,pos.y,false);
+	for (var i = 0; i < actors.length; i++) {
+		this._scheduler.add(actors[i]);
+	}
+};	
+	
 //setup FOV for each level
 Game.Map.prototype._createFOV = function() {
 	var map = this;
@@ -146,6 +179,11 @@ Game.Map.prototype._createFOV = function() {
 			return !map.getTile(level,x,y).blocksLight();
 		}, {topology:8}));
 	}
+};
+//function to use in fov compute method
+Game.Map.prototype.computePlayerFOV = function(x, y, radius, visibility) {
+	this.addVisibleTile(x,y);
+    this.setTileExplored(true,this.getPlayer().getLevel(),x,y);
 };
 
 //resets visible tiles to an empty hashmap
@@ -169,4 +207,6 @@ Game.Map.prototype.setTileExplored = function(explored,l,x,y) {
 Game.Map.prototype.isTileExplored = function(l,x,y) {
 	return this._exploredTiles.get(l,x,y);
 };
+
+
 

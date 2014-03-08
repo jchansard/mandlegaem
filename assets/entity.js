@@ -48,7 +48,7 @@ Game.Entity.prototype.getY = function() {
 	return this._y;
 };
 Game.Entity.prototype.getPosition = function() {
-	return {l: this._l, x: this._x, y: this._y}
+	return {l: this._l, x: this._x, y: this._y};
 };
 Game.Entity.prototype.getLevel = function() {
 	return this._l;
@@ -109,28 +109,41 @@ Game.Entity.prototype.reactToEvent = function(event) {
 Game.Entity.prototype.tryMove = function(dx, dy, dl) {
 	//default dl to 0 if not passed
 	dl = (dl !== undefined) ? dl : 0;
-	var oldX = this._x;
-	var oldY = this._y;
-	var oldL = this._l;
 	var newX = this._x + dx;
 	var newY = this._y + dy;
 	var newL = this._l + dl;
 	var tile = this.getMap().getTile(newL,newX,newY);
 	var target = this.getMap().getEntity(newL,newX,newY);
 	if (tile.blocksMove()) {
-		return false;
+		return -1;
 	} else if (target) {
 		if (this.hasProperty('PlayerActor')) {
 			target.kill();
 			this.reactToEvent('onMove',dx, dy, dl);
-			return true;
+			return 1;
 		}
 	} else {
-		this.setPosition(newL,newX,newY);
-		this.getMap().updatePosition(this,oldL,oldX,oldY);
+		if (this.hasProperty('PlayerActor')) {
+			var actions = tile.actionsToTraverse();		
+			if (this.getNumActions() >= actions) {		//TODO: don't like calculating this in here
+				this.move(newL,newX,newY);
+				this.reactToEvent('onMove', dx, dy, dl);
+				return actions;
+			} else {
+				console.log('not enough actions! have: ' + this.getNumActions() + ', need ' + actions);
+				return -1;
+			}
+		}
+		this.move(newL,newX,newY);
 		this.reactToEvent('onMove', dx, dy, dl);
-		return true;
+		return 1;
 	}
+};
+
+Game.Entity.prototype.move = function(newL, newX, newY) {
+	var oldl = this._l, oldx = this._x, oldy = this._y;
+	this.setPosition(newL,newX,newY);
+	this.getMap().updatePosition(this,oldl,oldx,oldy);	//TODO: don't really like this function needing old coordinates
 };
 
 //kills the entity

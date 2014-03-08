@@ -6,7 +6,7 @@ var Game =  {
 
 	init: function() {
         // create rot display object 
-        this._display = new ROT.Display({width: this._screenWidth, height: this._screenHeight + 1});
+        this._display = new ROT.Display({width: this._screenWidth, height: this._screenHeight + 2}); //TODO: why am i adding 2 just make this mapheight or something
         //send keyboard input to screens
         var game = this; 
         var sendEventsToScreen = function(event) {

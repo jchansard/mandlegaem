@@ -61,7 +61,23 @@ Game.Screen.gameScreen = {
 	},
 	render: function(display) {
 		var map = this._player.getMap();
+		var actions = this._player.getNumActions() || 3;
+		var icons = '';
 		this.drawTiles(display,map);
+		for (var i = 0; i < 3; i++) {
+			if (actions > i) {
+				icons += '%c{#77F}▐▌';
+			}
+			else {
+				icons += '%c{#009}▐▌';
+			}
+		}
+		display.drawText(1,36,'actions:' + icons);
+		display.drawText(1,37,'player x: ' + this._player.getX() + '; player y: ' + this._player.getY());
+			//display.draw(x + 10, 37, ' ', 'white', 'black');
+			//display.draw(x + 11, 37, ' ', 'white', bg);
+			//display.draw(x + 12, 37, ' ', 'white', bg);
+			//display.draw(x + 13, 37, ' ', 'white', 'black');
 	},
 	handleInput: function(type, data) {
 		//TODO: make this better?? 
@@ -69,10 +85,14 @@ Game.Screen.gameScreen = {
             // Movement
 			if (typeof this._directionKeys[data.keyCode] === 'string') {
 				var offsets = this._directions[this._directionKeys[data.keyCode]];
-				if (this._player.tryMove(offsets.dx,offsets.dy,offsets.dl)) {
+				this._player.tryAction(this._player.tryMove,offsets.dx,offsets.dy,offsets.dl);
+				if (this._player.getNumActions() <= 0) { //TODO: this should be better......??????
 					this._player.getMap().getEngine().unlock();
 				}
+			} else if (data.keyCode === ROT.VK_COMMA) {
+				console.log(this._player.getMap().getScheduler());
 			}
+		}
             /*if (data.keyCode === ROT.VK_LEFT) {
                 this._player.tryMove(-1, 0);
             } else if (data.keyCode === ROT.VK_RIGHT) {
@@ -82,7 +102,7 @@ Game.Screen.gameScreen = {
             } else if (data.keyCode === ROT.VK_DOWN) {
                 this._player.tryMove(0, 1);
             } else { return; }
-        } else { return;*/ }
+        } else { return; }*/ 
 	},
     drawTiles: function(display) {
     	//get stuff to make it easier to work with
@@ -97,13 +117,7 @@ Game.Screen.gameScreen = {
     	//var visibleTiles = new Game.Hashmap(2);
 		map.resetVisibleTiles();
         // add all visible tiles to hashmap
-        //TODO: maybe make callback own function; check for sight property??
-        map.getFOV(player.getLevel()).compute(
-            this._player.getX(), this._player.getY(), this._player.getSightRadius(), function(x, y, radius, visibility) {
-                //visibleTiles.add(true,x,y);
-				map.addVisibleTile(x,y);
-                map.setTileExplored(true,l,x,y);
-            });
+        map.getFOV(player.getLevel()).compute(player.getX(), player.getY(), player.getSightRadius(), map.computePlayerFOV.bind(map));
     	//get the leftmost x coordinate to draw in order to center the player since our map is wider than the screen 
     	//but make sure that we don't display offscreen tiles if the player is close to the left border
     	var leftmostX = Math.max(0,player.getX() - (screenWidth/2));
@@ -126,8 +140,6 @@ Game.Screen.gameScreen = {
 	    			} else {
 	    				fg = ROT.Color.toHex(ROT.Color.interpolate(ROT.Color.fromString(glyph.getFGColor()),[0,0,0],0.5));
 	    				bg = ROT.Color.toHex(ROT.Color.interpolate(ROT.Color.fromString(glyph.getBGColor()),[0,0,0],0.8));
-	    				//fg = 'darkGray'
-	    				//bg = ROT.Color.toHex([43,34,26]);
 	    				character = glyph.getChar();
 	    			}
 	    			display.draw(x-leftmostX, y, character, fg, bg);

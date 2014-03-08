@@ -3,7 +3,7 @@ Game.PlayerActor = {
     fgcolor: 'white',
     bgcolor: 'black',
 	sightRadius: 4,
-	properties: [Game.ActorProperties.PlayerActor, Game.ActorProperties.PlayerSight],
+	properties: [Game.ActorProperties.PlayerActor, Game.ActorProperties.Sight],
 	skills: [Game.Skills.Lunge]
 };
 
@@ -15,12 +15,5 @@ Game.ZombieActor = {
 	character: 'z',
 	fgcolor: 'red',
 	bgcolor: '#222',
-	properties: [{
-		name: 'ZombieActor',
-		group: 'Actor',
-		act: function() {
-			//console.log('braaains');
-			return;
-		}
-	}]
+	properties: [Game.ActorProperties.ZombieActor, Game.ActorProperties.Sight]
 };

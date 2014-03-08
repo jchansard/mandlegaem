@@ -50,7 +50,7 @@ Game.Architect.prototype._generateSingleLevel = function(iterations) {
 	}
 	treeGen.create(function(x,y,v) {
 		if (v === 1) { 
-			tiles[x][y] = new Game.Tile(Game.Tile.wallTile); 
+			tiles[x][y] = new Game.Tile(Game.Tile.treeTile); 
 		}
 	});
 	
