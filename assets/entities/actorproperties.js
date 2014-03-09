@@ -31,18 +31,13 @@ Game.ActorProperties.PlayerActor = {
 			return false;
 		}
 	}
-	/*events: {
-		onMove: function() {
-			this.decreaseNumActions(1);
-		}
-	}*/
 };
 
 Game.ActorProperties.ZombieActor = {
 	name: 'ZombieActor',
 	group: 'Actor',
 	init: function(template) {
-		this._priorities = ['chase','becomeDormant','doNothing'];
+		this._priorities = ['wakeUp','chase','becomeDormant','doNothing'];
 		this._turnsInactive = 0;
 		this._goalInUndeath = false;
 	},
@@ -53,10 +48,6 @@ Game.ActorProperties.ZombieActor = {
 				return;
 			}
 		}
-		/*if (this.canSee(this.getMap().getPlayer())) {
-			console.log("braains");
-		}
-		else { return; }*/
 	},
 	canDo: function(action) {
 		switch(action) {
@@ -73,12 +64,6 @@ Game.ActorProperties.ZombieActor = {
 				} else {
 					return false;
 				}
-				//hard mode
-				/*if (this.canSee(this.getMap().getPlayer()) || this._goalInUndeath !== false) {
-					return true;
-				} else {
-					return false;
-				} */
 				break;
 			case 'becomeDormant':
 				if (this._turnsInactive >= 10) {
@@ -156,7 +141,7 @@ Game.ActorProperties.Sight = {
 		//break early if they're not even close to each other
 		var nearbyEntities = this.getMap().getEntitiesInRadius(this.getSightRadius(),l,this._x,this._y,false);
 		if (nearbyEntities.indexOf(entity) < 0) {
-			return false
+			return false;
 		}
 		
 		var canSee = false;

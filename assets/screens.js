@@ -22,8 +22,6 @@ Game.Screen.startScreen = {
 
 Game.Screen.gameScreen = {
 	_player: null,
-	_directions: {},
-	_directionKeys: [],
 	enter: function() {
 		this._player = new Game.Entity(Game.PlayerActor);
 		var numLevels = 1;
@@ -31,33 +29,6 @@ Game.Screen.gameScreen = {
 		var height = Game.getScreenHeight();
 		var map = new Game.Map.Forest(numLevels,width,height,this._player); 
 		map.getEngine().start();
-		//TODO: Make this better
-		this._directions = {
-			'l': {
-				dx: -1,
-				dy: 0,
-				dl: 0
-			},
-			'r': {
-				dx: 1,
-				dy: 0,
-				dl: 0
-			},
-			'u': {
-				dx: 0,
-				dy: -1,
-				dl: 0
-			},
-			'd': {
-				dx: 0,
-				dy: 1,
-				dl: 0
-			}
-		};
-		this._directionKeys = [];
-		for (var i = ROT.VK_LEFT; i <= ROT.VK_DOWN; i++) {
-			this._directionKeys[i] = 'lurd'.charAt(i-ROT.VK_LEFT);
-		}
 	},
 	render: function(display) {
 		var map = this._player.getMap();
@@ -74,35 +45,17 @@ Game.Screen.gameScreen = {
 		}
 		display.drawText(1,36,'actions:' + icons);
 		display.drawText(1,37,'player x: ' + this._player.getX() + '; player y: ' + this._player.getY());
-			//display.draw(x + 10, 37, ' ', 'white', 'black');
-			//display.draw(x + 11, 37, ' ', 'white', bg);
-			//display.draw(x + 12, 37, ' ', 'white', bg);
-			//display.draw(x + 13, 37, ' ', 'white', 'black');
 	},
 	handleInput: function(type, data) {
 		//TODO: make this better?? 
+		
+        var keymap = Game.Keymap.PlayScreen;		
 		if (type === 'keydown') {
-            // Movement
-			if (typeof this._directionKeys[data.keyCode] === 'string') {
-				var offsets = this._directions[this._directionKeys[data.keyCode]];
-				this._player.tryAction(this._player.tryMove,offsets.dx,offsets.dy,offsets.dl);
-				if (this._player.getNumActions() <= 0) { //TODO: this should be better......??????
-					this._player.getMap().getEngine().unlock();
-				}
-			} else if (data.keyCode === ROT.VK_COMMA) {
-				console.log(this._player.getMap().getScheduler());
-			}
+			keymap.handleKey(data.keyCode,this);
+		}    
+		if (this._player.getNumActions() <= 0) { //TODO: this should be better......??????
+			this._player.getMap().getEngine().unlock();
 		}
-            /*if (data.keyCode === ROT.VK_LEFT) {
-                this._player.tryMove(-1, 0);
-            } else if (data.keyCode === ROT.VK_RIGHT) {
-                this._player.tryMove(1, 0);
-            } else if (data.keyCode === ROT.VK_UP) {
-                this._player.tryMove(0, -1);
-            } else if (data.keyCode === ROT.VK_DOWN) {
-                this._player.tryMove(0, 1);
-            } else { return; }
-        } else { return; }*/ 
 	},
     drawTiles: function(display) {
     	//get stuff to make it easier to work with
@@ -146,5 +99,8 @@ Game.Screen.gameScreen = {
     			}
     		}
     	}
+    },
+    getPlayer: function() {
+    	return this._player;
     }
 };

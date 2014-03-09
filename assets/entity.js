@@ -31,7 +31,7 @@ Game.Entity = function(template) {
 			}
 		}
 		if (properties[i].init !== undefined) {
-			properties[i].init.call(this, properties);
+			properties[i].init.call(this, template);
 		}
 		this._properties[properties[i].name] = true;
 	}
@@ -109,6 +109,9 @@ Game.Entity.prototype.reactToEvent = function(event) {
 Game.Entity.prototype.tryMove = function(dx, dy, dl) {
 	//default dl to 0 if not passed
 	dl = (dl !== undefined) ? dl : 0;
+	if (dx === 0 && dy === 0 && dl === 0) {
+		return 1;
+	}
 	var newX = this._x + dx;
 	var newY = this._y + dy;
 	var newL = this._l + dl;
@@ -154,7 +157,7 @@ Game.Entity.prototype.kill = function() {
 	if (tileType === 'floor') {
 		for (var x = -1; x <= 1; x++) {
 			for (var y = -1; y <= 1; y++) {
-				if (Game.randRange(0,1) || (x === 0 && y === 0)) {
+				if (Game.Calc.randRange(0,1) || (x === 0 && y === 0)) {
 					this.getMap().setTile(Game.Tile.bloodTile, this._l, this._x + x, this._y + y, {sameProperties:true});
 				}
 			}

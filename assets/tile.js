@@ -1,11 +1,11 @@
 ﻿Game.Tile = function(properties) {
 	properties = properties || {};
 	Game.Glyph.call(this,properties);
-	this._type = properties['type'];
+	this._type = properties['type'] || 'null';
 	this._blocksMove = (properties['blocksMove'] !== undefined) ? properties['blocksMove'] : true;
 	this._blocksLight = (properties['blocksLight'] !== undefined) ? properties['blocksLight'] : true;
 	this._blocksSpawn = properties['blocksSpawn'] || this._blocksMove || false;
-	this._blocksAI = properties['blocksAI'] || false;
+	this._blocksAI = (properties['blocksAI'] !== undefined) ? properties['blocksAI'] : true;
 	this._sightModifier = properties['sightModifier'] || 1;
 	this._actionsToTraverse = properties['actionsToTraverse'] || 1;
 };
@@ -36,16 +36,32 @@ Game.Tile.prototype.actionsToTraverse = function() {
 Game.Tile.nullTile = new Game.Tile({});
 Game.Tile.treeTile = {
 	type: 'tree',
-	character: '♣',
+	character: '▲',
 	fgcolor:'#0A0',
 	bgcolor: function() {
 		var color = ROT.Color.randomize([0,90,0],[0,15,0]);
 		return ROT.Color.toHex(color); 
 		},
-	blocksMove: false,
+	blocksMove: true,
 	blocksLight: true,
 	blocksSpawn: true,
 	blocksAI: true,
+	//sightModifier: 0.25,
+	//actionsToTraverse: 3
+};
+Game.Tile.secretPathTile = {
+	type: 'floor',
+	character: '▲',
+	fgcolor:'#080',
+	bgcolor: function() {
+		var color = ROT.Color.randomize([0,90,0],[0,15,0]);
+		return ROT.Color.toHex(color); 
+		},
+	blocksMove: false,
+	blocksLight: false,
+	blocksSpawn: true,
+	blocksAI: true,
+	sightModifier: 0.25,
 	actionsToTraverse: 3
 };
 Game.Tile.grassTile = {
@@ -58,6 +74,7 @@ Game.Tile.grassTile = {
 		},
 	blocksMove: false,
 	blocksLight: false,
+	blocksAI: false,
 	sightModifier: 0.25
 };
 Game.Tile.groundTile = {
@@ -69,7 +86,8 @@ Game.Tile.groundTile = {
 		return ROT.Color.toHex(color); 
 		},
 	blocksMove: false,
-	blocksLight: false
+	blocksLight: false,
+	blocksAI: false,
 };
 Game.Tile.bloodTile = {
 	type: 'floor',
@@ -80,7 +98,8 @@ Game.Tile.bloodTile = {
 		return ROT.Color.toHex(color);
 	},
 	blocksMove: false,
-	blocksLight: false
+	blocksLight: false,
+	blocksAI: false
 };
 Game.Tile.bloodGrass = {
 	type: 'grass',
@@ -92,5 +111,6 @@ Game.Tile.bloodGrass = {
 	},
 	blocksMove: false,
 	blocksLight: false,
+	blocksAI: false,
 	sightModifier: 0.25,	
 };

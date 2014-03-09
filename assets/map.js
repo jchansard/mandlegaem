@@ -73,8 +73,8 @@ Game.Map.prototype.getRandomTile = function(l,blocksspawn) {
 	blocksspawn = blocksspawn || false;
 	var x,y;
 	do {
-		x = Game.randRange(0,this._width-1);
-		y = Game.randRange(0,this._height-1);
+		x = Game.Calc.randRange(0,this._width-1);
+		y = Game.Calc.randRange(0,this._height-1);
 	} while(!this._tiles[l][x][y].blocksSpawn() === blocksspawn);
 	return {l:l, x:x, y:y};
 };

@@ -53,6 +53,59 @@ Game.Architect.prototype._generateSingleLevel = function(iterations) {
 			tiles[x][y] = new Game.Tile(Game.Tile.treeTile); 
 		}
 	});
-	
+	tiles = this._trailblaze(tiles,45);
 	return tiles;
+};
+
+//creates lines of walkable treetiles in tree masses. Creates numPaths paths.
+Game.Architect.prototype._trailblaze = function(tiles,numPaths) {
+	for (var i = 0; i < numPaths; i++) {
+		var startTile, firstDestinationTile, secondDestinationTile, x, y;
+		startTile = this._getRandomTileOfType(tiles,'tree');
+		firstDestinationTile = this._getRandomTileOfType(tiles,'floor');
+		var offsets = Game.Calc.calcOffsets(startTile.x, startTile.y, firstDestinationTile.x, firstDestinationTile.y);
+		do {
+			secondDestinationTile = this._getRandomTileOfType(tiles,'floor');
+			var offsets2 = Game.Calc.calcOffsets(startTile.x, startTile.y, secondDestinationTile.x, secondDestinationTile.y);
+		} while (offsets.x === offsets2.x && offsets.y === offsets2.y);
+		
+		//set starting point to a secret path tile
+		tiles[startTile.x][startTile.y] = new Game.Tile(Game.Tile.secretPathTile);
+		
+		//get the points b/w start tile and destination tile
+		var path = Game.Calc.getLine(startTile.x, startTile.y, firstDestinationTile.x, firstDestinationTile.y);
+		
+		//turn all the trees b/w start tile and destination tile into secret path tiles until it hits a non-tree tile		
+		for (var j = 1; j < path.length; j++) {
+			var x = path[j].x, y = path[j].y;
+			if (tiles[x][y].getType() === 'tree') {
+				tiles[path[j].x][path[j].y] = new Game.Tile(Game.Tile.secretPathTile);
+			} else {
+				break;
+			}
+		}
+		
+		//now do the same with the second destination tile (copy paste wooooooooo)
+		path = Game.Calc.getLine(startTile.x, startTile.y, secondDestinationTile.x, secondDestinationTile.y);
+		for (var j = 1; j < path.length; j++) {
+			var x = path[j].x, y = path[j].y;
+			if (tiles[x][y].getType() === 'tree') {
+				tiles[path[j].x][path[j].y] = new Game.Tile(Game.Tile.secretPathTile);
+			} else {
+				break;
+			}
+		}
+	}
+	return tiles;
+};
+
+//returns a random tile in tiles of type 'type'. 
+Game.Architect.prototype._getRandomTileOfType = function(tiles,type) {
+	var x,y,tile;
+	do {
+		x = Game.Calc.randRange(0,this._width-1);
+		y = Game.Calc.randRange(0,this._height-1);
+		tile = {x:x, y:y};
+	} while(tiles[x][y].getType() !== type);	
+	return tile;
 };
