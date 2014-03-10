@@ -4,7 +4,7 @@ Game.PlayerActor = {
     bgcolor: 'black',
 	sightRadius: 4,
 	properties: [Game.ActorProperties.PlayerActor, Game.ActorProperties.Sight],
-	skills: [Game.Skills.Lunge]
+	skills: [Game.Skills.Lunge,Game.Skills.Shoot]
 };
 
 //TODO: move this to actor database

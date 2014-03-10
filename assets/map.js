@@ -208,5 +208,14 @@ Game.Map.prototype.isTileExplored = function(l,x,y) {
 	return this._exploredTiles.get(l,x,y);
 };
 
+//returns the background of the displayed glyph at l,x,y
+Game.Map.prototype.calcTransparentBGColor = function(l,x,y) {
+	var entity = this._entities.get(l,x,y)
+	if (entity) {
+		return entity.getBGColor();
+	} else {
+		return this.getTile(l,x,y).getBGColor();
+	}
+};
 
 

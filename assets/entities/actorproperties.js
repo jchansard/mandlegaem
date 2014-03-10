@@ -25,6 +25,9 @@ Game.ActorProperties.PlayerActor = {
 		if (actions > -1) {
 			this.decreaseNumActions(actions);
 			Game.refreshScreen();
+			if (this.getNumActions() <= 0) { //TODO: this should be better......??????
+				this.getMap().getEngine().unlock();
+			}
 			return true;
 		}
 		else {

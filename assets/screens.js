@@ -22,6 +22,8 @@ Game.Screen.startScreen = {
 
 Game.Screen.gameScreen = {
 	_player: null,
+	_subscreen: null,
+	_keymap: Game.Keymap.PlayScreen,	
 	enter: function() {
 		this._player = new Game.Entity(Game.PlayerActor);
 		var numLevels = 1;
@@ -31,6 +33,10 @@ Game.Screen.gameScreen = {
 		map.getEngine().start();
 	},
 	render: function(display) {
+		if (this._subscreen) {
+			this._subscreen.render(display);
+			return;
+		}
 		var map = this._player.getMap();
 		var actions = this._player.getNumActions() || 3;
 		var icons = '';
@@ -44,18 +50,24 @@ Game.Screen.gameScreen = {
 			}
 		}
 		display.drawText(1,36,'actions:' + icons);
+		for (var i = 1; i <= 12; i++) {
+			if (this._player.getNumShots() >= i) {
+				display.draw(23 + (i*2),36,'▀','yellow','red');
+			} else {
+				break;
+			}
+		}
+		display.drawText(16,36,'bullets: ');// + this._player.getNumShots());
 		display.drawText(1,37,'player x: ' + this._player.getX() + '; player y: ' + this._player.getY());
 	},
-	handleInput: function(type, data) {
-		//TODO: make this better?? 
-		
-        var keymap = Game.Keymap.PlayScreen;		
+	handleInput: function(type, data) {	
+		if (this._subscreen) {
+            this._subscreen.handleInput(type,data);
+            return;
+        }
 		if (type === 'keydown') {
-			keymap.handleKey(data.keyCode,this);
+			this._keymap.handleKey(data.keyCode,this);
 		}    
-		if (this._player.getNumActions() <= 0) { //TODO: this should be better......??????
-			this._player.getMap().getEngine().unlock();
-		}
 	},
     drawTiles: function(display) {
     	//get stuff to make it easier to work with
@@ -67,15 +79,11 @@ Game.Screen.gameScreen = {
     	var screenWidth = Game.getScreenWidth();
     	var screenHeight = Game.getScreenHeight();
     	
-    	//var visibleTiles = new Game.Hashmap(2);
 		map.resetVisibleTiles();
         // add all visible tiles to hashmap
         map.getFOV(player.getLevel()).compute(player.getX(), player.getY(), player.getSightRadius(), map.computePlayerFOV.bind(map));
     	//get the leftmost x coordinate to draw in order to center the player since our map is wider than the screen 
-    	//but make sure that we don't display offscreen tiles if the player is close to the left border
-    	var leftmostX = Math.max(0,player.getX() - (screenWidth/2));
-    	//and make sure that we don't display offscreen tiles if the player is close to the right border
-    	leftmostX = Math.min(leftmostX, map.getWidth() - screenWidth);
+    	var leftmostX = this.getScreenOffsets().x;
     	
     	//draw them tiles
     	for (var x = leftmostX; x < screenWidth + leftmostX; x++) {
@@ -100,7 +108,87 @@ Game.Screen.gameScreen = {
     		}
     	}
     },
+    getScreenOffsets: function() {
+    	var map = this._player.getMap();
+    	//but make sure that we don't display offscreen tiles if the player is close to the left border
+    	var leftmostX = Math.max(0,this._player.getX() - (Game.getScreenWidth()/2));
+    	//and make sure that we don't display offscreen tiles if the player is close to the right border
+    	leftmostX = Math.min(leftmostX, map.getWidth() - Game.getScreenWidth());
+    	var topmostY = Math.max(0,this._player.getY() - (Game.getScreenHeight()/2));
+    	topmostY = Math.min(topmostY, map.getHeight() - Game.getScreenHeight());
+    	return {x: leftmostX, y:topmostY};
+    },
     getPlayer: function() {
     	return this._player;
+    },
+    setSubscreen: function(subscreen) {
+    	this._subscreen = subscreen;
     }
 };
+
+Game.Screen.TargetScreen = function(template) {
+	template = template || {};
+	this._label = template['label'];
+	this._accept = template['accept'];
+	this._keymap = template['keymap'] || Game.Keymap.SkillTargetScreen;
+	this._allowAllTiles = template['allowAllTiles'] || false;
+};
+
+Game.Screen.TargetScreen.prototype.init = function(player, x, y, offsets) {
+	this._player = player;
+	this._offsets = offsets;
+	this._start = {x:x - offsets.x, y:y - offsets.y};
+	this._cursor = {x:this._start.x, y:this._start.y};
+};
+
+Game.Screen.TargetScreen.prototype.render = function(display) {
+	Game.Screen.gameScreen.drawTiles.call(Game.Screen.gameScreen,display);
+	var line = Game.Calc.getLine(this._start.x, this._start.y, this._cursor.x, this._cursor.y);
+	for (var i = 1; i < line.length; i++) {
+		var coords = this.getMapCoords(line[i].x, line[i].y);
+		var bg = this._player.getMap().calcTransparentBGColor(
+			this._player.getLevel(), coords.x, coords.y);
+		var chr = (i !== line.length - 1) ? '•' : '○';
+		display.draw(line[i].x, line[i].y, chr,'goldenrod',bg);
+	}
+	display.drawText(1,36,this._label); //TODO: robustify
+};
+
+Game.Screen.TargetScreen.prototype.handleInput = function(type,data) {
+	if (type === 'keydown') {
+		this._keymap.handleKey(data.keyCode,this);
+	}
+	Game.refreshScreen(); 
+};
+
+Game.Screen.TargetScreen.prototype.getMapCoords = function(x,y) {
+	return {x: this._offsets.x + x, y: this._offsets.y + y}; 
+};
+
+Game.Screen.TargetScreen.prototype.moveCursor = function(dx, dy) {
+	var tiles = this._player.getMap().getVisibleTiles();
+	var coords = this.getMapCoords(this._cursor.x + dx, this._cursor.y + dy);
+	if (this._allowAllTiles || tiles.get(coords.x, coords.y)) {
+		this._cursor = {
+			x: Math.max(0,Math.min(this._cursor.x + dx, Game.getScreenWidth())),
+			y: Math.max(0,Math.min(this._cursor.y + dy, Game.getScreenWidth())) 
+		};		
+	}	
+};
+
+Game.Screen.TargetScreen.prototype.acceptTarget = function() {
+	Game.Screen.gameScreen.setSubscreen(null);
+	this._accept();
+};
+
+Game.Screen.SkillTargetScreen = new Game.Screen.TargetScreen({
+	label: 'Select a target.',
+	accept: function() {
+		var coords = this.getMapCoords(this._cursor.x, this._cursor.y);
+		var entity = this._player.getMap().getEntities().get(this._player.getLevel(), coords.x, coords.y);
+		if (entity) {
+			entity.kill();
+		}
+	},
+	keymap: Game.Keymap.SkillTargetScreen
+});

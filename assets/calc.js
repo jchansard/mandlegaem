@@ -3,8 +3,9 @@ Game.Calc = {
 	randRange: function(x,y) {
 	return Math.floor(Math.random()*(y-x+1)) + x;
 	},
-    getLine: function(x1, y1, x2, y2) {
+    getLine: function(x1, y1, x2, y2,len) {
     	//stolen fairly shamelessly
+    	//TODO: fix bug with lines looking weird (e.g. when line = y-3,x-2)
         var line = [];
         var dx = Math.abs(x2 - x1);
         var dy = Math.abs(y2 - y1);
@@ -14,7 +15,7 @@ Game.Calc = {
         var e2;
         while (true) {
             line.push({x: x1, y: y1});
-            if (x1 == x2 && y1 == y2) {
+            if ((len === undefined && (x1 == x2 && y1 == y2)) || (len !== undefined && line.length >= len)) {
                 break;
             }
             e2 = err * 2;
@@ -22,7 +23,7 @@ Game.Calc = {
                 err -= dy;
                 x1 += sx;
             }
-            if (e2 < dx){
+            if (e2 < dx) {
                 err += dx;
                 y1 += sy;
             }
@@ -33,9 +34,15 @@ Game.Calc = {
     calcSlope: function(x1, y1, x2, y2) {
     	return ((y2 - y1)/(x2-x1));
     },
-    calcOffsets: function(x1, y1, x2, y2) {
-    	var xOffset = ((x1 - x2) > 1) ? 1 : -1;
-    	var yOffset = ((y1 - y2) > 1) ? 1 : -1;
+    calcOffsets: function(x1, y1, x2, y2, full) {
+    	full = full || false;
+    	if (!full) {
+    		var xOffset = ((x1 - x2) > 1) ? 1 : -1;
+    		var yOffset = ((y1 - y2) > 1) ? 1 : -1;
+    	} else {
+    		var xOffset = x1 - x2;
+    		var yOffset = y1 - y2;
+    	}
     	return {x:xOffset, y:yOffset};
     } 
 };

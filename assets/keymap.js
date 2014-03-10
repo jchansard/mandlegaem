@@ -27,6 +27,9 @@ Game.Keymap = function(template) {
 	this._keys[ROT.VK_LEFT] 	= 'left';
 	this._keys[ROT.VK_DOWN] 	= 'down';
 	this._keys[ROT.VK_1]		= 'test';
+	this._keys[ROT.VK_RETURN]   = 'enter';
+	this._keys[ROT.VK_ESCAPE]   = 'esc';
+	this._keys[ROT.VK_Z]		= 'skill1';
 	
 	for (var key in template) {
 		this[key] = template[key]; 
@@ -78,7 +81,55 @@ Game.Keymap.PlayScreen = new Game.Keymap({
 		var player = scr.getPlayer();
 		player.tryAction(player.tryMove,1,-1,0);
 	},
-	test: function(scr) {
-		console.log(scr);
+	skill1: function(scr) {
+		var offsets = scr.getScreenOffsets();
+		var player = scr.getPlayer();
+		var targetScreen = new Game.Screen.TargetScreen({
+				label: 'Select a target.',
+				accept: function() {
+					var coords = this.getMapCoords(this._cursor.x, this._cursor.y); //TODO: account for level??					
+					player.useSkill(1,coords);										//TODO: what if skill1 doesn't require targetting? need to be smarter about this. maybe include the targetscreen in the skill.
+				} 
+		});
+		targetScreen.init(player, player.getX(), player.getY(), offsets);
+		scr.setSubscreen(targetScreen);
+		Game.refreshScreen();
+		return;
+	}
+});
+
+Game.Keymap.SkillTargetScreen = new Game.Keymap({
+	downleft: function(scr) {
+		scr.moveCursor(-1,1);
+	},
+	down: function(scr) {
+		scr.moveCursor(0,1);
+	},
+	downright: function(scr) {
+		scr.moveCursor(1,1);
+	},
+	left: function(scr) {
+		scr.moveCursor(-1,0);
+	},
+	rest: function(scr) {
+		scr.moveCursor(0,0);
+	},
+	right: function(scr) {
+		scr.moveCursor(1,0);
+	},
+	upleft: function(scr) {
+		scr.moveCursor(-1,-1);
+	},
+	up: function(scr) {
+		scr.moveCursor(0,-1);
+	},
+	upright: function(scr) {
+		scr.moveCursor(1,-1);
+	},
+	enter: function(scr) {
+		scr.acceptTarget();
+	},
+	esc: function(scr) {
+		Game.Screen.gameScreen.setSubscreen(undefined);
 	}
 });

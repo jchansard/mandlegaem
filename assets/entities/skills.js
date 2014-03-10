@@ -27,7 +27,7 @@ Game.Skills.Lunge = {
 				this._getLungeableTargets();
 			}
 			var pos = this.getPosition();
-			var map = this.getMap()
+			var map = this.getMap();
 			var target = this.getMap().getEntity(pos.l + dl, pos.x + dx, pos.y + dy);
 			if (target !== undefined && this._lungeableTargets.indexOf(target) > -1) {
 				console.log('you lunge at the '+target.getName() + '!');
@@ -36,5 +36,42 @@ Game.Skills.Lunge = {
 			this.clearLungeableTargets();
 			this._getLungeableTargets();
 		}
+	}
+};
+
+Game.Skills.Shoot = {
+	name: 'shoot',
+	source: 'skill',
+	initPassive: function() {
+		this._numShots = 12;
+		this.getNumShots = function() {
+			return this._numShots;
+		};
+	},
+	canUse: function() {
+		return (this.getNumShots() > 0);
+	},
+	//TODO: move this to entity
+	use: function(target, options) {
+		options = options || {};
+		//TODO: make this not instakill, allow headshot option
+		var l = this.getLevel(), x = this.getX(), y = this.getY();
+		var line = Game.Calc.getLine(x, y, target.x, target.y, 5);		
+		for (var i = 1; i < line.length; i++)
+		{
+			var entity = this.getMap().getEntities().get(l, line[i].x, line[i].y);
+			var tile = this.getMap().getTile(l, line[i].x, line[i].y);
+			if (entity) {
+				if (entity !== this) {
+					this._numShots--;
+					entity.kill();
+				}
+				return;
+			} else if (tile.blocksMove()) {
+				this._numShots--;
+				return;
+			}
+		}
+		this._numShots--;
 	}
 };

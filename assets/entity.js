@@ -56,6 +56,9 @@ Game.Entity.prototype.getLevel = function() {
 Game.Entity.prototype.getMap = function() {
 	return this._map;
 };
+Game.Entity.prototype.getSkills = function() {
+	return this._skills;
+};
 Game.Entity.prototype.setX = function(x) {
 	this._x = x;
 };
@@ -92,6 +95,13 @@ Game.Entity.prototype._applySkillPassives = function() {
 				this._events[key].push(this._skills[i].events[key]);
 			}
 		}
+	}
+};
+
+Game.Entity.prototype.useSkill = function(skill) {
+	var args = Array.prototype.slice.call(arguments,1);
+	if (this._skills[skill].canUse.apply(this,args)) {
+		this._skills[skill].use.apply(this,args);
 	}
 };
 
