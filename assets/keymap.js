@@ -89,7 +89,7 @@ Game.Keymap.PlayScreen = new Game.Keymap({
 		var player = scr.getPlayer();
 		var targetScreen = scr.getPlayer().getSkills()[1].getScreen();
 		if (targetScreen !== undefined) {
-			targetScreen = new Game.Screen.TargetScreen(targetScreen);
+			targetScreen = new Game.Screen.TargetScreen(scr.getPlayer().getSkills()[1],targetScreen);
 			targetScreen.init(player, player.getX(), player.getY(), offsets);
 			scr.setSubscreen(targetScreen);
 			Game.refreshScreen();

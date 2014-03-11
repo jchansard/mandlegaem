@@ -6,7 +6,7 @@ Game.Skills = function(source,template) {
 	this.initPassive = template['initPassive'] || function() { return; };
 	this.canUse = template['canUse'] || function() { return false; };
 	this.use = template['use'] || function() { return false; };
-	this.otherInfo = template['otherInfo'];			//TODO: skills have properties like actors e.g. range, aoe, target type
+	this._otherInfo = template['otherInfo'];			//TODO: skills have properties like actors e.g. range, aoe, target type
 };  
 
 Game.Skills.prototype.getSource = function() {
@@ -21,6 +21,17 @@ Game.Skills.prototype.getEvents = function() {
 Game.Skills.prototype.getScreen = function() {
 	return this._screen;
 };
+Game.Skills.prototype.getOtherInfo = function(key) {		//TODO: don't like "other info"
+	if (key) {
+		return this._otherInfo[key];
+	} else {
+		return this._otherInfo;
+	}
+};
+Game.Skills.prototype.setOtherInfo = function(key,value) {
+	this._otherInfo[key] = value;
+};
+
 
 Game.Skills.Lunge = {
 	name: 'lunge',
@@ -41,7 +52,6 @@ Game.Skills.Lunge = {
 		};
 	},
 	events: {
-	//TODO: make it so that you can't kill things you didn't see before moving (e.g. in tall grass)
 		onMove: function(dx,dy,dl) {
 			//should only happen if you haven't moved yet
 			if (this._lungeableTargets === null) {
@@ -74,9 +84,7 @@ Game.Skills.Shoot = {
 		};
 	},
 	otherInfo: {
-		_headshot: false,
-		_targets: [],
-		_currTarget: null,
+		range: 4,
 	},
 	scr: {
 		buttonCaption1: 'Shoot',
@@ -92,9 +100,9 @@ Game.Skills.Shoot = {
 			this.acceptTarget();
 		},
 		buttonFunc2: function() {
-			if (this._headshot !== true) {  		//TODO: better way of doing this: link screen to skill
+			if (this._headshot !== true) {  	
 				this.buttonCaption2 = 'Headshot (1)';
-				this._headshot = true;
+				this._headshot = true;				//TODO: better way to do this
 			} else {
 				this.buttonCaption2 = 'Regular (0)';
 				this._headshot = false;
@@ -102,24 +110,10 @@ Game.Skills.Shoot = {
 			Game.refreshScreen();
 		},
 		buttonFunc3: function() {
-			if (this._targets === undefined) {		//TODO: ewewew
-				this._targets = this._player.getMap().getEntitiesInRadius(4,this._player.getLevel(),this._player.getX(),this._player.getY(),{
-					includeCenter: false,
-					closestFirst: true,
-					visibleOnly: true});          //TODO; don't hardcode range here
-			}
-			if (this._target === undefined || this._targets.length - 1 <= this._target) {
-				this._target = 0;
-			} else {
-				this._target ++;
-			}
-			if (this._targets[this._target] !== undefined) {
-				this._cursor = this.getScreenCoords(this._targets[this._target].getX(), this._targets[this._target].getY());		//TODO: movecursorto function?
-				Game.refreshScreen();
-			}
+			this.getNextTargetCoords();
 		},
 		buttonFunc4: function() {
-			Game.Screen.gameScreen.setSubscreen(undefined);
+			Game.Screen.gameScreen.setSubscreen(undefined);			
 		}
 	},
 	canUse: function() {
@@ -129,7 +123,6 @@ Game.Skills.Shoot = {
 	use: function(target, options) {
 		options = options || {};
 		//TODO: make this not instakill if can't see enemy
-		//TODO: clean up for loop
 		var l = this._source.getLevel(), x = this._source.getX(), y = this._source.getY();
 		var line = Game.Calc.getLine(x, y, target.x, target.y, 5);		
 		for (var i = 1; i < line.length; i++)
@@ -143,7 +136,7 @@ Game.Skills.Shoot = {
 					if (Math.random() > 0.5 || options['headshot']) {
 						entity.kill();
 					} else {
-						console.log('TODO: daze enemy')
+						console.log('TODO: daze enemy');
 					}
 					return actions;
 				}

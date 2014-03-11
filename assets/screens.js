@@ -147,8 +147,9 @@ Game.Screen.gameScreen = {
     }
 };
 
-Game.Screen.TargetScreen = function(template) {
+Game.Screen.TargetScreen = function(skill,template) {
 	template = template || {};
+	this._skill = skill;
 	this._label = template['label'];
 	this._keymap = template['keymap'] || Game.Keymap.SkillTargetScreen;
 	this._allowAllTiles = template['allowAllTiles'] || false;
@@ -168,6 +169,11 @@ Game.Screen.TargetScreen.prototype.init = function(player, x, y, offsets) {
 	this._offsets = offsets;
 	this._start = {x:x - offsets.x, y:y - offsets.y};
 	this._cursor = {x:this._start.x, y:this._start.y};
+	this._availableTargets = this._player.getMap().getEntitiesInRadius(this._skill.getOtherInfo('range'),this._player.getLevel(),this._player.getX(),this._player.getY(),{
+					includeCenter: false,
+					closestFirst: true,
+					visibleOnly: true});
+	this._currentTarget = 0;
 };
 
 Game.Screen.TargetScreen.prototype.render = function(display) {
@@ -197,6 +203,23 @@ Game.Screen.TargetScreen.prototype.getMapCoords = function(x,y) {
 
 Game.Screen.TargetScreen.prototype.getScreenCoords = function(x,y) {
 	return {x: x - this._offsets.x, y: y - this._offsets.y};
+};
+
+Game.Screen.TargetScreen.prototype.getNextTarget = function() {
+	var target;
+	if (this._availableTargets[this._currentTarget]) {
+		target = this._availableTargets[this._currentTarget];
+	}
+	this._currentTarget++;
+	if (this._currentTarget >= this._availableTargets.length) {
+		this._currentTarget = 0;
+	}
+	return target;
+};
+
+Game.Screen.TargetScreen.prototype.getNextTargetCoords = function() {
+	var target = this.getNextTarget();
+	this._cursor = this.getScreenCoords(target.getX(),target.getY());
 };
 
 Game.Screen.TargetScreen.prototype.moveCursor = function(dx, dy) {
