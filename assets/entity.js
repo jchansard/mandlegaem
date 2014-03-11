@@ -10,6 +10,7 @@ Game.Entity = function(template) {
 	this._properties = {};
 	this._propertyGroups = {};
 	this._events = {};
+	this._learnStartingSkills();
 	this._applySkillPassives();
 	var properties = template['properties'] || [];
 	for (var i = 0; i < properties.length; i++) {
@@ -82,17 +83,22 @@ Game.Entity.prototype.hasProperty = function(property) {
 	return this._properties[property] || this._propertyGroups[property];
 };
 
+Game.Entity.prototype._learnStartingSkills = function() {
+	for (var i = 0; i < this._skills.length; i++) {
+		this._skills[i] = new Game.Skills(this, this._skills[i]);
+	}
+}
+
 Game.Entity.prototype._applySkillPassives = function() {
 	for (var i = 0; i < this._skills.length; i++) {
-		if (this._skills[i].initPassive !== undefined) {
-			this._skills[i].initPassive.call(this);
-		}
-		if (this._skills[i].events !== undefined) {
-			for (var key in this._skills[i].events) {	
+		this._skills[i].initPassive(this);
+		var events = this._skills[i].getEvents();
+		if (events !== undefined) {
+			for (var key in events) {	
 				if (this._events[key] === undefined) {
 					this._events[key] = [];
 				}
-				this._events[key].push(this._skills[i].events[key]);
+				this._events[key].push(events[key]);
 			}
 		}
 	}
@@ -100,9 +106,19 @@ Game.Entity.prototype._applySkillPassives = function() {
 
 Game.Entity.prototype.useSkill = function(skill) {
 	var args = Array.prototype.slice.call(arguments,1);
-	if (this._skills[skill].canUse.apply(this,args)) {
-		this._skills[skill].use.apply(this,args);
+	var actions = 0;
+	if (typeof skill === 'string') {
+		for (var i = 0; i < this._skills.length; i++) {
+			if (skill === this._skills[i].getName()) {
+				skill = this._skills[i];
+				break;
+			}
+		}
 	}
+	if (skill.canUse.apply(skill,args)) {
+		actions = skill.use.apply(skill,args);
+	}
+	return actions;
 };
 
 Game.Entity.prototype.reactToEvent = function(event) {

@@ -58,7 +58,9 @@ Game.Screen.gameScreen = {
 			}
 		}
 		display.drawText(16,36,'bullets: ');// + this._player.getNumShots());
-		display.drawText(1,37,'player x: ' + this._player.getX() + '; player y: ' + this._player.getY());
+		//display.drawText(1,37,'player x: ' + this._player.getX() + '; player y: ' + this._player.getY());
+		var skills = this._player.getSkills();  //TODO: get button key
+		this.drawButtons(display, 'Z: ' + skills[1].getName(),'','','');
 	},
 	handleInput: function(type, data) {	
 		if (this._subscreen) {
@@ -97,6 +99,9 @@ Game.Screen.gameScreen = {
 	    				}
 	    			fg = glyph.getFGColor();
 		    		bg = glyph.getBGColor();
+					if (bg === 'none') {
+						bg = tiles[l][x][y].getBGColor();
+					}
 		    		character = glyph.getChar();
 	    			} else {
 	    				fg = ROT.Color.toHex(ROT.Color.interpolate(ROT.Color.fromString(glyph.getFGColor()),[0,0,0],0.5));
@@ -108,6 +113,22 @@ Game.Screen.gameScreen = {
     		}
     	}
     },
+	drawButtons: function(display,button1,button2,button3,button4) {
+		//TODO: center button function?
+		for (var i = 0; i < 4; i++) {
+			var caption = arguments[i+1];
+			while (caption.length < 12) {
+				if (caption.length % 2) {
+					caption = ' ' + caption;;
+				} else {
+					caption += ' ';
+				}
+			}
+			if (arguments[i+1] !== '') {
+				display.drawText(1 + (i*15), 37, '%c{white}%b{DeepSkyBlue}[%b{DodgerBlue}' + caption + '%b{DeepSkyBlue}]');
+			}
+		}
+	},
     getScreenOffsets: function() {
     	var map = this._player.getMap();
     	//but make sure that we don't display offscreen tiles if the player is close to the left border
@@ -129,9 +150,17 @@ Game.Screen.gameScreen = {
 Game.Screen.TargetScreen = function(template) {
 	template = template || {};
 	this._label = template['label'];
-	this._accept = template['accept'];
 	this._keymap = template['keymap'] || Game.Keymap.SkillTargetScreen;
 	this._allowAllTiles = template['allowAllTiles'] || false;
+	this.buttonCaption1 = template['buttonCaption1'] || '';
+	this.buttonCaption2 = template['buttonCaption2'] || '';
+	this.buttonCaption3 = template['buttonCaption3'] || '';
+	this.buttonCaption4 = template['buttonCaption4'] || '';
+	this.accept = template['accept'];
+	this.buttonFunc1 = template['buttonFunc1'];
+	this.buttonFunc2 = template['buttonFunc2'];
+	this.buttonFunc3 = template['buttonFunc3'];
+	this.buttonFunc4 = template['buttonFunc4'];
 };
 
 Game.Screen.TargetScreen.prototype.init = function(player, x, y, offsets) {
@@ -143,6 +172,7 @@ Game.Screen.TargetScreen.prototype.init = function(player, x, y, offsets) {
 
 Game.Screen.TargetScreen.prototype.render = function(display) {
 	Game.Screen.gameScreen.drawTiles.call(Game.Screen.gameScreen,display);
+	Game.Screen.gameScreen.drawButtons.call(this, display, this.buttonCaption1, this.buttonCaption2, this.buttonCaption3, this.buttonCaption4);
 	var line = Game.Calc.getLine(this._start.x, this._start.y, this._cursor.x, this._cursor.y);
 	for (var i = 1; i < line.length; i++) {
 		var coords = this.getMapCoords(line[i].x, line[i].y);
@@ -165,6 +195,10 @@ Game.Screen.TargetScreen.prototype.getMapCoords = function(x,y) {
 	return {x: this._offsets.x + x, y: this._offsets.y + y}; 
 };
 
+Game.Screen.TargetScreen.prototype.getScreenCoords = function(x,y) {
+	return {x: x - this._offsets.x, y: y - this._offsets.y};
+};
+
 Game.Screen.TargetScreen.prototype.moveCursor = function(dx, dy) {
 	var tiles = this._player.getMap().getVisibleTiles();
 	var coords = this.getMapCoords(this._cursor.x + dx, this._cursor.y + dy);
@@ -178,7 +212,7 @@ Game.Screen.TargetScreen.prototype.moveCursor = function(dx, dy) {
 
 Game.Screen.TargetScreen.prototype.acceptTarget = function() {
 	Game.Screen.gameScreen.setSubscreen(null);
-	this._accept();
+	this.accept();
 };
 
 Game.Screen.SkillTargetScreen = new Game.Screen.TargetScreen({

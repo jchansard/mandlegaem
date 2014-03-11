@@ -29,7 +29,10 @@ Game.Keymap = function(template) {
 	this._keys[ROT.VK_1]		= 'test';
 	this._keys[ROT.VK_RETURN]   = 'enter';
 	this._keys[ROT.VK_ESCAPE]   = 'esc';
-	this._keys[ROT.VK_Z]		= 'skill1';
+	this._keys[ROT.VK_Z]		= 'button1';
+	this._keys[ROT.VK_X]		= 'button2';
+	this._keys[ROT.VK_C]		= 'button3';
+	this._keys[ROT.VK_V]		= 'button4';
 	
 	for (var key in template) {
 		this[key] = template[key]; 
@@ -81,10 +84,19 @@ Game.Keymap.PlayScreen = new Game.Keymap({
 		var player = scr.getPlayer();
 		player.tryAction(player.tryMove,1,-1,0);
 	},
-	skill1: function(scr) {
+	button1: function(scr) {
 		var offsets = scr.getScreenOffsets();
 		var player = scr.getPlayer();
-		var targetScreen = new Game.Screen.TargetScreen({
+		var targetScreen = scr.getPlayer().getSkills()[1].getScreen();
+		if (targetScreen !== undefined) {
+			targetScreen = new Game.Screen.TargetScreen(targetScreen);
+			targetScreen.init(player, player.getX(), player.getY(), offsets);
+			scr.setSubscreen(targetScreen);
+			Game.refreshScreen();
+		} else {
+			player.tryAction(player.useSkill(1));
+		}
+		/*new Game.Screen.TargetScreen({
 				label: 'Select a target.',
 				accept: function() {
 					var coords = this.getMapCoords(this._cursor.x, this._cursor.y); //TODO: account for level??					
@@ -93,7 +105,7 @@ Game.Keymap.PlayScreen = new Game.Keymap({
 		});
 		targetScreen.init(player, player.getX(), player.getY(), offsets);
 		scr.setSubscreen(targetScreen);
-		Game.refreshScreen();
+		Game.refreshScreen();*/
 		return;
 	}
 });
@@ -131,5 +143,17 @@ Game.Keymap.SkillTargetScreen = new Game.Keymap({
 	},
 	esc: function(scr) {
 		Game.Screen.gameScreen.setSubscreen(undefined);
+	},
+	button1: function(scr) {
+		scr.buttonFunc1();
+	},
+	button2: function(scr) {
+		scr.buttonFunc2();
+	},
+	button3: function(scr) {
+		scr.buttonFunc3();
+	},
+	button4: function(scr) {
+		scr.buttonFunc4();
 	}
 });

@@ -60,9 +60,11 @@ Game.ActorProperties.ZombieActor = {
 				} else if (this.canSee(this.getMap().getPlayer())) {
 					return true;
 				}
+				return false;
 				break;
 			case 'chase':
 				if (this._goalInUndeath !== false) {
+					console.log('chasin');
 					return true;
 				} else {
 					return false;
@@ -83,11 +85,15 @@ Game.ActorProperties.ZombieActor = {
 	wakeUp: function() {
 		console.log(this.getName() + ' has noticed you');
 		this._goalInUndeath = this.getMap().getPlayer().getPosition();
+		this.setBGColor('orange');
 	},
 	chase: function() {
 		var player = this.getMap().getPlayer();
 		if (this.canSee(player)) {
 			this._goalInUndeath = player.getPosition();
+		} else if (this._goalInUndeath.l === this.getLevel() && this._goalInUndeath.x === this.getX() && this._goalInUndeath.y === this.getY()) {
+			this._goalInUndeath = false;
+			return;
 		}
 		if (this.getMap().getDistanceBetween(this._x, this._y, player.getX(), player.getY()) === 1) {
 			player.kill();
@@ -113,7 +119,9 @@ Game.ActorProperties.ZombieActor = {
 	},
 	becomeDormant: function() {
 		console.log(this.getName() + ' seems to have forgotten about you');
-		this.getMap().getScheduler().remove(this);
+		this._turnsInactive = 0;
+		this.setBGColor('green'); //TODO: this aint workin
+		this.getMap().getScheduler().remove(this);		
 	},
 	doNothing: function() {
 		this._turnsInactive++;
@@ -142,7 +150,7 @@ Game.ActorProperties.Sight = {
 		var y2 = entity.getY();
 		
 		//break early if they're not even close to each other
-		var nearbyEntities = this.getMap().getEntitiesInRadius(this.getSightRadius(),l,this._x,this._y,false);
+		var nearbyEntities = this.getMap().getEntitiesInRadius(this.getSightRadius(),l,this._x,this._y,{includeCenter: false});
 		if (nearbyEntities.indexOf(entity) < 0) {
 			return false;
 		}
@@ -155,5 +163,13 @@ Game.ActorProperties.Sight = {
 			} 
 		});
 		return canSee;
+	}
+};
+//TODO: move skills stuff here
+Game.ActorProperties.SkillUser = {
+	name: 'SkillUser',
+	group: 'SkillUser',
+	init: function(properties) {
+		this._lastTarget = null; 	
 	}
 };

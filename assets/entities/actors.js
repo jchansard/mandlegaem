@@ -1,9 +1,9 @@
 Game.PlayerActor = {
 	character: '@',
     fgcolor: 'white',
-    bgcolor: 'black',
+    bgcolor: 'none',
 	sightRadius: 4,
-	properties: [Game.ActorProperties.PlayerActor, Game.ActorProperties.Sight],
+	properties: [Game.ActorProperties.PlayerActor, Game.ActorProperties.Sight, Game.ActorProperties.SkillUser],
 	skills: [Game.Skills.Lunge,Game.Skills.Shoot]
 };
 
@@ -14,6 +14,6 @@ Game.ZombieActor = {
 	name: 'zombie',
 	character: 'z',
 	fgcolor: 'red',
-	bgcolor: '#222',
+	bgcolor: 'none',
 	properties: [Game.ActorProperties.ZombieActor, Game.ActorProperties.Sight]
 };

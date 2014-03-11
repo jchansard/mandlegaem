@@ -86,21 +86,49 @@ Game.Map.prototype.getEntity = function(l,x,y) {
 
 //returns entities in square radius around specified coordinates
 //includeCenter: if true, returns entity @ l,x,y; if false, doesn't
-Game.Map.prototype.getEntitiesInRadius = function(radius, l, x, y, includeCenter) {
+//closestFirst: if true, sorts by closest
+//visibleOnly: if true, returns only entities in visible tiles
+//TODO: if closestFirst turns out to be reliable, make it the default way
+Game.Map.prototype.getEntitiesInRadius = function(radius, l, x, y, options) {
+	var includeCenter = options['includeCenter'];
+	var closestFirst = options['closestFirst'];
+	var visibleOnly = options['visibleOnly'];
 	var entities = [];	
-	for (var key in this._entities) {
-	//TODO: better way to loop through hashmaps
-		if (this._entities[key] instanceof Game.Entity) {
-			var entity = this._entities[key];
-			if (entity.getX() >= (x - radius) &&
-				entity.getX() <= (x + radius) &&
-				entity.getY() >= (y - radius) &&
-				entity.getY() <= (y + radius) &&
-				entity.getLevel() === l) {
-				if (includeCenter || !(entity.getX() === x && entity.getY() === y))
-				entities.push(entity);
+	if (!closestFirst) {
+		for (var key in this._entities) {
+		//TODO: better way to loop through hashmaps
+			if (this._entities[key] instanceof Game.Entity) {
+				var entity = this._entities[key];
+				if (entity.getX() >= (x - radius) &&
+					entity.getX() <= (x + radius) &&
+					entity.getY() >= (y - radius) &&
+					entity.getY() <= (y + radius) &&
+					entity.getLevel() === l) {
+					if (includeCenter || !(entity.getX() === x && entity.getY() === y)) {
+						if (!visibleOnly || this._visibleTiles.get(entity.getX(),entity.getY())) {
+							entities.push(entity);
+						}
+					}
+				}
 			}
 		}
+	}
+	else {								//TODO: this needs work
+		if (includeCenter) {
+			entities.push(this._entities.get(l,x,y));
+		}
+		for (var r = 1; r <= radius; r++) {
+			for (var yoff = -1*r; yoff <= 1*r; yoff++) {
+				for (var xoff = -1*r; xoff <= 1*r; xoff++) {
+					var entity = this._entities.get(l, x + xoff, y + yoff);
+					if (entity && !(xoff === 0 && yoff === 0) && entities.indexOf(entity) === -1) {
+						if (!visibleOnly || this._visibleTiles.get(entity.getX(),entity.getY())) {
+							entities.push(entity);
+						}	
+					}	
+				}	
+			}	
+		}	
 	}
 	return entities;
 };
@@ -164,7 +192,7 @@ Game.Map.prototype.updateScheduler = function() {
 		var rad = (player.getSightRadius() * 2);
 	}
 	else { rad = 10; };
-	var actors = this.getEntitiesInRadius(rad,pos.l,pos.x,pos.y,false);
+	var actors = this.getEntitiesInRadius(rad,pos.l,pos.x,pos.y,{includeCenter:false});
 	for (var i = 0; i < actors.length; i++) {
 		this._scheduler.add(actors[i]);
 	}
@@ -212,10 +240,12 @@ Game.Map.prototype.isTileExplored = function(l,x,y) {
 Game.Map.prototype.calcTransparentBGColor = function(l,x,y) {
 	var entity = this._entities.get(l,x,y)
 	if (entity) {
-		return entity.getBGColor();
-	} else {
-		return this.getTile(l,x,y).getBGColor();
+		var bg = entity.getBGColor();
+	} 
+	if (!entity || bg === 'none') {
+		bg = this.getTile(l,x,y).getBGColor();
 	}
+	return bg;
 };
 
 
