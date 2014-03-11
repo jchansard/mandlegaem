@@ -219,7 +219,9 @@ Game.Screen.TargetScreen.prototype.getNextTarget = function() {
 
 Game.Screen.TargetScreen.prototype.getNextTargetCoords = function() {
 	var target = this.getNextTarget();
-	this._cursor = this.getScreenCoords(target.getX(),target.getY());
+	if (target) {
+		this._cursor = this.getScreenCoords(target.getX(),target.getY());
+	}
 };
 
 Game.Screen.TargetScreen.prototype.moveCursor = function(dx, dy) {
