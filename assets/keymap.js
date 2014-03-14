@@ -85,17 +85,7 @@ Game.Keymap.PlayScreen = new Game.Keymap({
 		player.tryAction(player.tryMove,1,-1,0);
 	},
 	button1: function(scr) {
-		var offsets = scr.getScreenOffsets();
-		var player = scr.getPlayer();
-		var targetScreen = scr.getPlayer().getSkills()[1].getScreen();
-		if (targetScreen !== undefined) {
-			targetScreen = new Game.Screen.TargetScreen(scr.getPlayer().getSkills()[1],targetScreen);
-			targetScreen.init(player, player.getX(), player.getY(), offsets);
-			scr.setSubscreen(targetScreen);
-			Game.refreshScreen();
-		} else {
-			player.tryAction(player.useSkill(1));
-		}
+		scr.getButtons(0).doAction(scr,1);		//TODO: private
 		/*new Game.Screen.TargetScreen({
 				label: 'Select a target.',
 				accept: function() {
@@ -139,21 +129,21 @@ Game.Keymap.SkillTargetScreen = new Game.Keymap({
 		scr.moveCursor(1,-1);
 	},
 	enter: function(scr) {
-		scr.acceptTarget();
+		scr.acceptSubscreen();
 	},
 	esc: function(scr) {
 		Game.Screen.gameScreen.setSubscreen(undefined);
 	},
 	button1: function(scr) {
-		scr.buttonFunc1();
+		scr.getButtons()[0].doAction(scr);
 	},
 	button2: function(scr) {
-		scr.buttonFunc2();
+		scr.getButtons()[1].doAction(scr);
 	},
 	button3: function(scr) {
-		scr.buttonFunc3();
+		scr.getButtons()[2].doAction(scr);
 	},
 	button4: function(scr) {
-		scr.buttonFunc4();
+		scr.getButtons()[3].doAction(scr);
 	}
 });

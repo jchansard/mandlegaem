@@ -87,7 +87,7 @@ Game.Entity.prototype._learnStartingSkills = function() {
 	for (var i = 0; i < this._skills.length; i++) {
 		this._skills[i] = new Game.Skills(this, this._skills[i]);
 	}
-}
+};
 
 Game.Entity.prototype._applySkillPassives = function() {
 	for (var i = 0; i < this._skills.length; i++) {

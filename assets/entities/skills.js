@@ -7,6 +7,7 @@ Game.Skills = function(source,template) {
 	this.canUse = template['canUse'] || function() { return false; };
 	this.use = template['use'] || function() { return false; };
 	this._otherInfo = template['otherInfo'];			//TODO: skills have properties like actors e.g. range, aoe, target type
+	this._toggle = template['toggle'];					//TODO: merge this with above
 };  
 
 Game.Skills.prototype.getSource = function() {
@@ -27,6 +28,9 @@ Game.Skills.prototype.getOtherInfo = function(key) {		//TODO: don't like "other 
 	} else {
 		return this._otherInfo;
 	}
+};
+Game.Skills.prototype.getToggle = function() {
+	return this._toggle;
 };
 Game.Skills.prototype.setOtherInfo = function(key,value) {
 	this._otherInfo[key] = value;
@@ -86,40 +90,17 @@ Game.Skills.Shoot = {
 	otherInfo: {
 		range: 4,
 	},
+	toggle: ['Normal (0)','Headshot (1)'],			//TODO: don't hardcode actions taken? also allow for more than one toggle?
 	scr: {
-		buttonCaption1: 'Shoot',
-		buttonCaption2: 'Regular (0)',
-		buttonCaption3: 'Next',
-		buttonCaption4: 'Cancel',
 		label: 'Select a target.',
 		accept: function() {
 			var coords = this.getMapCoords(this._cursor.x, this._cursor.y); //TODO: account for level??					
-			this._player.tryAction(this._player.useSkill,'Shoot',coords,{headshot:this._headshot}); 
+			this._player.tryAction(this._player.useSkill,'Shoot',coords,{headshot:this.getButtons(1).isToggled()});  //TODO: ewwwwwww
 		},
-		buttonFunc1: function() {
-			this.acceptTarget();
-		},
-		buttonFunc2: function() {
-			if (this._headshot !== true) {  	
-				this.buttonCaption2 = 'Headshot (1)';
-				this._headshot = true;				//TODO: better way to do this
-			} else {
-				this.buttonCaption2 = 'Regular (0)';
-				this._headshot = false;
-			}
-			Game.refreshScreen();
-		},
-		buttonFunc3: function() {
-			this.getNextTargetCoords();
-		},
-		buttonFunc4: function() {
-			Game.Screen.gameScreen.setSubscreen(undefined);			
-		}
 	},
 	canUse: function() {
 		return (this._source.getNumShots() > 0);
 	},
-	//TODO: move this to entity
 	use: function(target, options) {
 		options = options || {};
 		//TODO: make this not instakill if can't see enemy
