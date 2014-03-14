@@ -6,13 +6,11 @@ Game.Screen.TargetScreen = function(skill,template) {
 	this._allowAllTiles = template['allowAllTiles'] || false;
 	this.accept = template['accept'];
 	this._buttons = [];
-	this._buttons[0] = Game.ScreenButtons.SelectButton;
-	this._buttons[2] = Game.ScreenButtons.NextTargetButton;
-	this._buttons[3] = Game.ScreenButtons.CancelButton;
+	this._buttons[0] = new Game.ScreenButton(Game.ScreenButtons.SelectButton, this);
+	this._buttons[2] = new Game.ScreenButton(Game.ScreenButtons.NextTargetButton, this);
+	this._buttons[3] = new Game.ScreenButton(Game.ScreenButtons.CancelButton, this);
 	if (skill.getToggle() !== undefined) {
-		this._buttons[1] = Game.ScreenButtons.SkillToggleButton;
-		this._buttons[1]._caption = this._buttons[1]._caption.bind(this);			//is this iffy?
-		this._buttons[1]._toggleCaption = this._buttons[1]._toggleCaption.bind(this);
+		this._buttons[1] = new Game.ScreenButton(Game.ScreenButtons.SkillToggleButton, this);
 	}
 	
 };

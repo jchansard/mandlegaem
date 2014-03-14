@@ -1,36 +1,36 @@
 Game.ScreenButtons = {};
 
-Game.ScreenButtons.SelectButton = new Game.ScreenButton({	
+Game.ScreenButtons.SelectButton = {	
 	caption: 'Select',
 	FGColor: 'white',
 	BGColor: 'darkslateblue',
 	buttonLength: 18,
 	action: Game.ScreenButton.ButtonAccept
-});
+};
 
-Game.ScreenButtons.NextTargetButton = new Game.ScreenButton({
+Game.ScreenButtons.NextTargetButton = {
 	caption: 'Next',
 	FGColor: 'white',
 	BGColor: 'darkslateblue',
 	buttonLength: 18,
 	action: Game.ScreenButton.ButtonNextTarget
-});
+};
 
-Game.ScreenButtons.CancelButton = new Game.ScreenButton({
+Game.ScreenButtons.CancelButton = {
 	caption: 'Cancel',
 	FGColor: 'white',
 	BGColor: 'darkslateblue',
 	buttonLength: 18,
 	action: Game.ScreenButton.ButtonCancel
-});
+};
 
-Game.ScreenButtons.SkillToggleButton = new Game.ScreenButton({
+Game.ScreenButtons.SkillToggleButton = {
 	caption: function() {
-		return this.getSkill().getToggle()[0];
+		return this._screen.getSkill().getToggle()[0];
 	},	
 	isToggle: true,
 	toggleCaption: function() {
-		return this.getSkill().getToggle()[1];
+		return this._screen.getSkill().getToggle()[1];
 	},
 	action: Game.ScreenButton.ButtonToggle
-});
+};

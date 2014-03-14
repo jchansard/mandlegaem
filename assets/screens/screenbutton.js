@@ -1,4 +1,5 @@
-Game.ScreenButton = function(properties) {
+Game.ScreenButton = function(properties,scrn) {
+	this._screen = scrn;
 	this._caption = properties['caption'];	
 	this._FGColor = properties['FGColor'] || 'white';
 	this._BGColor = properties['BGColor'] || 'darkslateblue';
