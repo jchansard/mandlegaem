@@ -4,6 +4,10 @@ Game.Calc = {
 	return Math.floor(Math.random()*(y-x+1)) + x;
 	},
     getLine: function(x1, y1, x2, y2,len) {
+    	if (typeof x1 !== 'number' || typeof y1 !== 'number' || typeof x2 !== 'number' || typeof y2 !== 'number') {
+    		throw new Error("non-numbers passed to getline");
+    		return;
+    	}
     	//stolen fairly shamelessly
     	//TODO: fix bug with lines looking weird (e.g. when line = y-3,x-2)
         var line = [];
