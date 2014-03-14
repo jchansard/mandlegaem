@@ -117,6 +117,11 @@ Game.Screen.gameScreen = {
 						bg = tiles[l][x][y].getBGColor();
 					}
 		    		character = glyph.getChar();
+		    		if (!(x === player.getX() && y === player.getY())) {
+	    				var interp = 1/(2*map.getDistanceBetween(x,y,player.getX(),player.getY())) + 0.5;
+	    				fg = ROT.Color.toHex(ROT.Color.interpolate([0,0,0],ROT.Color.fromString(fg),interp));
+	    				bg = ROT.Color.toHex(ROT.Color.interpolate([0,0,0],ROT.Color.fromString(bg),interp));
+	    			}
 	    			} else {
 	    				fg = ROT.Color.toHex(ROT.Color.interpolate(ROT.Color.fromString(glyph.getFGColor()),[0,0,0],0.5));
 	    				bg = ROT.Color.toHex(ROT.Color.interpolate(ROT.Color.fromString(glyph.getBGColor()),[0,0,0],0.8));
