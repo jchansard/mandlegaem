@@ -45,6 +45,12 @@ Game.ActorProperties.ZombieActor = {
 		this._goalInUndeath = false;
 	},
 	act: function() {
+		if (this.hasProperty('Defender')) {
+			if (this._debuffs['stunned'] > 0) {
+				this._debuffs['stunned']--;
+				return;
+			}
+		}
 		for (var i = 0; i < this._priorities.length; i++) {
 			if (this.canDo(this._priorities[i])) {
 				this[this._priorities[i]]();
@@ -52,12 +58,19 @@ Game.ActorProperties.ZombieActor = {
 			}
 		}
 	},
+	isAwake: function() {
+		if (this._goalInUndeath) {
+			return true;
+		} else {
+			return false;
+		}
+	},
 	canDo: function(action) {
 		switch(action) {
 			case 'wakeUp':
 				if (this._goalInUndeath !== false) { 
 					return false; 
-				} else if (this.canSee(this.getMap().getPlayer())) {
+				} else if (this.canSee(this.getMap().getPlayer()) || this._lastSoundHeard !== undefined) {
 					return true;
 				}
 				return false;
@@ -84,10 +97,17 @@ Game.ActorProperties.ZombieActor = {
 	},
 	wakeUp: function() {
 		console.log(this.getName() + ' has noticed you');
-		this._goalInUndeath = this.getMap().getPlayer().getPosition();
-		this.setBGColor('orange');
+		if (this.canSee(this.getMap().getPlayer())) {
+			this._goalInUndeath = this.getMap().getPlayer().getPosition();
+		} else {
+			this._goalInUndeath = this._lastSoundHeard;
+		}
+		this.setBGColor('gold');
 	},
 	chase: function() {
+		if (this.getBGColor() !== 'gold') {
+			this.setBGColor('gold');
+		}
 		var player = this.getMap().getPlayer();
 		if (this.canSee(player)) {
 			this._goalInUndeath = player.getPosition();
@@ -171,5 +191,82 @@ Game.ActorProperties.SkillUser = {
 	group: 'SkillUser',
 	init: function(properties) {
 		this._lastTarget = null; 	
+	}
+};
+
+Game.ActorProperties.ZombieHearing = {
+	name: 'ZombieHearing',
+	group: 'Hearing',
+	init: function(properties) {
+		this._lastSoundHeard =  undefined;
+	},
+	events: {
+		hearNoise: function(l,x,y) {
+			this._lastSoundHeard = {l:l, x:x, y:y};
+			if (!this.isAwake()) {
+				this.wakeUp();
+			}
+		}	
+	},
+};
+
+Game.ActorProperties.MakesNoise = {
+	name: 'MakesNoise',
+	init: function() {
+		this.makeNoise = function(radius) {
+			var entities = this.getMap().getEntitiesInRadius(radius, this._l, this._x, this._y, {includeCenter: false, closestFirst: true, visibleOnly: false});
+			for (var i = 0; i < entities.length; i++) {
+				entities[i].reactToEvent('hearNoise', this._l, this._x, this._y);
+			}
+		};	
+	}
+};
+
+Game.ActorProperties.Defender = {
+	name: 'Defender',
+	group: 'Attacker',
+	init: function(properties) {
+		this._hp = properties['hp'] || 1;
+		this._debuffs = {}; 
+	},
+	getHP: function() {
+		return this._hp;
+	},
+	getDebuffs: function(debuff) {
+		if (debuff !== undefined) {
+			return this._debuffs[debuff];
+		} else {
+		return this._debuffs;
+		}
+	},	
+	takeDamage: function(damage) {
+		this._hp -= damage;
+		if (this._hp <= 0) {
+			this.kill();
+		}
+	},
+	stun: function(duration) {
+		duration = duration || 1;
+		if (this._debuffs['stunned'] === undefined) {
+			this._debuffs['stunned'] = 0;
+		}
+		this._debuffs['stunned'] += duration;
+		this.setBGColor('mediumpurple');
+	},
+};
+
+Game.ActorProperties.Attacker = {
+	name: 'Attacker',
+	group: 'Attacker',
+	init: function(properties) {
+		this._atk = properties['atk'] || 1;
+	},
+	attack: function(target) {
+		if (target.hasProperty('Defender')) {
+			target.takeDamage(this._atk);
+		}
+	},
+	getAttack: function() {
+		return this._atk;
 	}
 };

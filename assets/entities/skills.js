@@ -94,7 +94,8 @@ Game.Skills.Shoot = {
 	scr: {
 		label: 'Select a target.',
 		accept: function() {
-			var coords = this.getMapCoords(this._cursor.x, this._cursor.y); //TODO: account for level??					
+			var coords = this.getMapCoords(this._cursor.x, this._cursor.y); //TODO: account for level??
+			coords.l = this._player.getLevel();					
 			this._player.tryAction(this._player.useSkill,'Shoot',coords,{headshot:this.getButtons(1).isToggled()});  //TODO: ewwwwwww
 		},
 	},
@@ -102,6 +103,12 @@ Game.Skills.Shoot = {
 		return (this._source.getNumShots() > 0);
 	},
 	use: function(target, options) {
+		if (this._source.getX() === target.x && this._source.getY() === target.y) {			
+			return -1;
+		}
+		if (this._source.hasProperty('MakesNoise')) {
+			this._source.makeNoise(6);				//TODO: don't hardcode
+		}
 		options = options || {};
 		//TODO: make this not instakill if can't see enemy
 		var l = this._source.getLevel(), x = this._source.getX(), y = this._source.getY();
@@ -117,7 +124,7 @@ Game.Skills.Shoot = {
 					if (Math.random() > 0.5 || options['headshot']) {
 						entity.kill();
 					} else {
-						console.log('TODO: daze enemy');
+						entity.stun();
 					}
 					return actions;
 				}
