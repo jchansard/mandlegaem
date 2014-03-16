@@ -43,7 +43,7 @@ Game.Screen.TargetScreen.prototype.render = function(display) {
 		var bg = this._player.getMap().calcTransparentBGColor(
 			this._player.getLevel(), coords.x, coords.y);
 		var chr = (i !== line.length - 1) ? '•' : '○';
-		display.draw(line[i].x, line[i].y, chr,'goldenrod',bg);
+		display.draw(line[i].x, line[i].y, chr,'dodgerblue',bg);
 	}
 	display.drawText(1,36,this._label); //TODO: robustify
 };

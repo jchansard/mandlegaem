@@ -146,12 +146,18 @@ Game.Entity.prototype.tryMove = function(dx, dy, dl) {
 	if (tile.blocksMove()) {
 		return -1;
 	} else if (target) {
-		if (this.hasProperty('PlayerActor')) {
-			target.kill();
+		if (this.hasProperty('MakesNoise')) {
+			this.makeNoise(2);							//TODO: make this a stat?
+		}
+		if (this.hasProperty('Attacker')) {
+			this.attack(target);
 			this.reactToEvent('onMove',dx, dy, dl);
 			return 1;
 		}
 	} else {
+		if (this.hasProperty('MakesNoise')) {
+			this.makeNoise(tile.noiseToTraverse());
+		}
 		if (this.hasProperty('PlayerActor')) {
 			var actions = tile.actionsToTraverse();		
 			if (this.getNumActions() >= actions) {		//TODO: don't like calculating this in here

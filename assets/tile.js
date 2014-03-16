@@ -8,6 +8,7 @@
 	this._blocksAI = (properties['blocksAI'] !== undefined) ? properties['blocksAI'] : true;
 	this._sightModifier = properties['sightModifier'] || 1;
 	this._actionsToTraverse = properties['actionsToTraverse'] || 1;
+	this._noiseToTraverse = properties['noiseToTraverse'] || 3;
 };
 Game.Tile.extend(Game.Glyph);
 
@@ -31,6 +32,9 @@ Game.Tile.prototype.getSightModifier = function() {
 };
 Game.Tile.prototype.actionsToTraverse = function() {
 	return this._actionsToTraverse;
+};
+Game.Tile.prototype.noiseToTraverse = function() {
+	return this._noiseToTraverse;
 };
 
 Game.Tile.nullTile = new Game.Tile({});
@@ -62,7 +66,8 @@ Game.Tile.secretPathTile = {
 	blocksSpawn: true,
 	blocksAI: true,
 	sightModifier: 0.25,
-	actionsToTraverse: 3
+	actionsToTraverse: 3,
+	noiseToTraverse: 5
 };
 Game.Tile.grassTile = {
 	type: 'grass',
