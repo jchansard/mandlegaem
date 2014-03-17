@@ -27,9 +27,7 @@ Game.Hashmap.prototype._getKey = function(args) {
 };
 Game.Hashmap.prototype.getKeysAsArray = function() {
 	var arr = Object.keys(this).slice(1);  //remove _numValues
-	for (var key in arr) {
-		console.log(key);
-	}
 	return arr;
 };
+
 

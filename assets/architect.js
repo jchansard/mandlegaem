@@ -2,9 +2,13 @@ Game.Architect = function(numLevels,width,height) {
 	this._numLevels = numLevels;
 	this._width = width;
 	this._height = height;
+	this._startingPoints = new Array(numLevels);
 	this._tiles = new Array(numLevels);
 	for (var i = 0; i < numLevels; i++) {
-		this._tiles[i] = this._generateSingleLevel(5);
+		this._startingPoints[i] = this._generateStartingPoint();
+		do {
+			this._tiles[i] = this._generateSingleLevel(5,this._startingPoints[i]);
+		} while (!this._hasPathToEnd(this._tiles[i], this._startingPoints[i]));
 	}
 };
 
@@ -20,8 +24,16 @@ Game.Architect.prototype.getHeight = function() {
 Game.Architect.prototype.getTiles = function() {
 	return this._tiles;
 };
+Game.Architect.prototype.getStartingPoints = function() {
+	return this._startingPoints;
+};
 
-Game.Architect.prototype._generateSingleLevel = function(iterations) {
+
+Game.Architect.prototype._generateStartingPoint = function() {
+		return {x: 3, y: Game.Calc.randRange(0,this._height-1)};	
+};
+
+Game.Architect.prototype._generateSingleLevel = function(iterations,startingPoint) {
 	var w = this._width;
 	var h = this._height;
 	var tiles = new Array(w);
@@ -54,6 +66,7 @@ Game.Architect.prototype._generateSingleLevel = function(iterations) {
 		}
 	});
 	tiles = this._trailblaze(tiles,45);
+	tiles = this._createSpawnArea(tiles, startingPoint);
 	return tiles;
 };
 
@@ -99,6 +112,34 @@ Game.Architect.prototype._trailblaze = function(tiles,numPaths) {
 	return tiles;
 };
 
+Game.Architect.prototype._hasPathToEnd = function(tiles, start) {
+	var endPoints = [];
+	
+	for (var i = 0; i < this._height; i++) {
+		if (tiles[this._width-1][i].blocksMove() === false) {
+			endPoints.push({x: this._width-1, y:i});
+		}
+	}
+	var isPassable = false;
+	var w = this._width;
+	var h = this._height;
+	for (var i = 0; i < endPoints.length; i++) {
+		var path = new ROT.Path.AStar(endPoints[i].x, endPoints[i].y, function(x,y) {
+			if (x < 0 || x >= w || y < 0 || y >= h) {
+				return false;
+			}
+			return !(tiles[x][y].blocksMove());
+		});
+		path.compute(start.x,start.y, function(x,y) {
+			isPassable = true;
+		});
+		if (isPassable) {
+			return true;
+		}
+	}
+	return isPassable;
+};
+
 //returns a random tile in tiles of type 'type'. 
 Game.Architect.prototype._getRandomTileOfType = function(tiles,type) {
 	var x,y,tile;
@@ -108,4 +149,12 @@ Game.Architect.prototype._getRandomTileOfType = function(tiles,type) {
 		tile = {x:x, y:y};
 	} while(tiles[x][y].getType() !== type);	
 	return tile;
+};
+
+Game.Architect.prototype._createSpawnArea = function(tiles,start) {	
+	var circle = Game.Calc.getFilledCircle(start.x, start.y, 3);
+	for (var i = 0; i < circle.length; i++) {
+		tiles[circle[i].x][circle[i].y] = new Game.Tile(Game.Tile.groundTile);
+	}
+	return tiles;
 };

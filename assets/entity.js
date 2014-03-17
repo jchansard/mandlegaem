@@ -5,13 +5,10 @@ Game.Entity = function(template) {
 	this._x = template['x'] || 0;
 	this._y = template['y'] || 0;
 	this._l = template['l'] || 0;
-	this._skills = template['skills'] || [];
 	this._map = null;
 	this._properties = {};
 	this._propertyGroups = {};
 	this._events = {};
-	this._learnStartingSkills();
-	this._applySkillPassives();
 	var properties = template['properties'] || [];
 	for (var i = 0; i < properties.length; i++) {
 		for (var key in properties[i]) {
@@ -83,44 +80,6 @@ Game.Entity.prototype.hasProperty = function(property) {
 	return this._properties[property] || this._propertyGroups[property];
 };
 
-Game.Entity.prototype._learnStartingSkills = function() {
-	for (var i = 0; i < this._skills.length; i++) {
-		this._skills[i] = new Game.Skills(this, this._skills[i]);
-	}
-};
-
-Game.Entity.prototype._applySkillPassives = function() {
-	for (var i = 0; i < this._skills.length; i++) {
-		this._skills[i].initPassive(this);
-		var events = this._skills[i].getEvents();
-		if (events !== undefined) {
-			for (var key in events) {	
-				if (this._events[key] === undefined) {
-					this._events[key] = [];
-				}
-				this._events[key].push(events[key]);
-			}
-		}
-	}
-};
-
-Game.Entity.prototype.useSkill = function(skill) {
-	var args = Array.prototype.slice.call(arguments,1);
-	var actions = 0;
-	if (typeof skill === 'string') {
-		for (var i = 0; i < this._skills.length; i++) {
-			if (skill === this._skills[i].getName()) {
-				skill = this._skills[i];
-				break;
-			}
-		}
-	}
-	if (skill.canUse.apply(skill,args)) {
-		actions = skill.use.apply(skill,args);
-	}
-	return actions;
-};
-
 Game.Entity.prototype.reactToEvent = function(event) {
 	if (this._events[event] === undefined) {
 		return false;
@@ -136,6 +95,16 @@ Game.Entity.prototype.tryMove = function(dx, dy, dl) {
 	//default dl to 0 if not passed
 	dl = (dl !== undefined) ? dl : 0;
 	if (dx === 0 && dy === 0 && dl === 0) {
+		return 1;
+	}
+	if (this.getX() >= this.getMap().getWidth() - 1) {
+		var newLevel = this.getLevel() + 1;
+		if (newLevel >= this.getMap().getNumLevels()) {
+			Game.changeScreen(Game.Screen.winScreen);
+			return -1;
+		}
+		var startingPoint = this.getMap().getStartingPoints()[newLevel];
+		this.setPosition(newLevel, startingPoint.x, startingPoint.y);
 		return 1;
 	}
 	var newX = this._x + dx;

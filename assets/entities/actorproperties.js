@@ -190,8 +190,46 @@ Game.ActorProperties.SkillUser = {
 	name: 'SkillUser',
 	group: 'SkillUser',
 	init: function(properties) {
-		this._lastTarget = null; 	
-	}
+		this._lastTarget = null; 
+		this._skills = properties['skills'];
+		this._learnStartingSkills();
+		this._applySkillPassives();	
+	},
+	useSkill: function(skill) {
+		var args = Array.prototype.slice.call(arguments,1);
+		var actions = 0;
+		if (typeof skill === 'string') {
+			for (var i = 0; i < this._skills.length; i++) {
+				if (skill === this._skills[i].getName()) {
+					skill = this._skills[i];
+					break;
+				}
+			}
+		}
+		if (skill.canUse.apply(skill,args)) {
+			actions = skill.use.apply(skill,args);
+		}
+		return actions;
+	},
+	_learnStartingSkills: function() {
+		for (var i = 0; i < this._skills.length; i++) {
+			this._skills[i] = new Game.Skills(this, this._skills[i]);
+		}
+	},
+	_applySkillPassives: function() {
+		for (var i = 0; i < this._skills.length; i++) {
+			this._skills[i].initPassive(this);
+			var events = this._skills[i].getEvents();
+			if (events !== undefined) {
+				for (var key in events) {	
+					if (this._events[key] === undefined) {
+						this._events[key] = [];
+					}
+					this._events[key].push(events[key]);
+				}
+			}
+		}
+	},
 };
 
 Game.ActorProperties.ZombieHearing = {

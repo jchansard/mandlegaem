@@ -20,6 +20,26 @@ Game.Screen.startScreen = {
     }
 };
 
+Game.Screen.winScreen = {
+	enter: function() { 
+    	return;
+    },
+    render: function(display) {
+    	
+        // TODO: make this purdy
+        display.drawText(55,15, "%c{blue}WOOOOOHOOOOO");
+        display.drawText(55,16, "%c{lightblue}hey you won!");
+    },
+    handleInput: function(type, data) {
+        // go to main game screen if enter is pressed
+        if (type === 'keydown') {
+            if (data.keyCode === ROT.VK_RETURN) {
+                Game.changeScreen(Game.Screen.startScreen);
+            }
+        }
+    }
+};
+
 Game.Screen.gameScreen = {
 	_player: null,
 	_subscreen: null,
@@ -29,7 +49,7 @@ Game.Screen.gameScreen = {
 		this._player = new Game.Entity(Game.PlayerActor);
 		this.initButtons();
 		var numLevels = 1;
-		var width = 400;
+		var width = 300;
 		var height = Game.getScreenHeight();
 		var map = new Game.Map.Forest(numLevels,width,height,this._player); 
 		map.getEngine().start();

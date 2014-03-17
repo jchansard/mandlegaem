@@ -48,5 +48,39 @@ Game.Calc = {
     		var yOffset = y1 - y2;
     	}
     	return {x:xOffset, y:yOffset};
-    } 
+    },
+    getFilledCircle: function(xO, yO, radius) {
+	    // copied/modified from stackoverflow.com/questions/1201200/fast-algorithm-for-drawing-filled-circles
+	    var x = radius;
+	    var y = 0;
+	    var xChange = 1 - (radius << 1);
+	    var yChange = 0;
+	    var radiusError = 0;
+	    var points = [];
+	    
+	    while (x >= y) {
+	        for (var i = xO - x; i <= xO + x; i++) {
+	            points.push({x: i, y:yO + y});
+	            points.push({x: i, y:yO - y});
+	            //tiles[i][yO + y] = tile;
+	            //tiles[i][yO - y] = tile;
+	        }
+	        for (var i = xO - y; i <= xO + y; i++) {
+	        	points.push({x: i, y:yO + x});
+	            points.push({x: i, y:yO - x});
+	            //tiles[i][yO + x] = tile;
+	            //tiles[i][yO - x] = tile;
+	        }
+	
+	        y++;
+	        radiusError += yChange;
+	        yChange += 2;
+	        if (((radiusError << 1) + xChange) > 0) {
+	            x--;
+	            radiusError += xChange;
+	            xChange += 2;
+	        }
+	    }
+	return points;
+	}
 };

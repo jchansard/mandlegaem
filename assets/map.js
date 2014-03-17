@@ -1,5 +1,7 @@
 Game.Map = function(numLevels, width, height, player) {
-	this._tiles = new Game.Architect(numLevels, width, height).getTiles();
+	this._architect = new Game.Architect(numLevels, width, height);
+	this._tiles = this._architect.getTiles();
+	this._startingPoints = this._architect.getStartingPoints();
 	this._player = player;
 	this._numLevels = numLevels;
 	this._width = width;
@@ -14,6 +16,9 @@ Game.Map = function(numLevels, width, height, player) {
 };
 Game.Map.prototype.getTiles = function() {
 	return this._tiles;
+};
+Game.Map.prototype.getStartingPoints = function () {
+	return this._startingPoints;
 };
 Game.Map.prototype.getPlayer = function() {
 	return this._player;

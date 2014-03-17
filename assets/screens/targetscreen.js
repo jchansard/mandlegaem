@@ -100,7 +100,33 @@ Game.Screen.TargetScreen.prototype.moveCursorToPoint = function(x, y) {
 	this._cursor = {x: x, y: y};
 };
 
-Game.Screen.TargetScreen.prototype.acceptSubscreen = function() {
+Game.Screen.TargetScreen.prototype.acceptSubscreen = function() {      //TODO: make a whole subscreen class
 	Game.Screen.gameScreen.setSubscreen(null);
 	this.accept();
+};
+
+Game.Screen.AimDirectionScreen = function(skill,template) {
+	template = template || {};
+	this._skill = skill;
+	this._label = template['label'];
+	this._keymap = template['keymap'] || Game.Keymap.SkillAimDirectionScreen;
+	this.accept = template['accept'];
+	this._buttons = [];
+};
+
+Game.Screen.AimDirectionScreen.prototype.init = function(player) {
+	this._player = player;
+	this._offsets = offsets;
+};
+
+Game.Screen.AimDirectionScreen.prototype.render = function(display) {
+	Game.Screen.gameScreen.drawTiles.call(Game.Screen.gameScreen,display);
+	Game.Screen.gameScreen.drawButtons.call(this, display,1,37);
+	display.drawText(1,36,this._label); //TODO: robustify
+};
+Game.Screen.TargetScreen.prototype.handleInput = function(type,data) {
+	if (type === 'keydown') {
+		this._keymap.handleKey(data.keyCode,this);
+	}
+	Game.refreshScreen(); 
 };

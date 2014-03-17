@@ -1,4 +1,4 @@
-Game.Skills = function(source,template) {
+Game.Skills = function(source,template) {        //TODO: not skills
 	this._source = source;
 	this._name = template['name'];
 	this._events = template['events'];
@@ -8,6 +8,7 @@ Game.Skills = function(source,template) {
 	this.use = template['use'] || function() { return false; };
 	this._otherInfo = template['otherInfo'];			//TODO: skills have properties like actors e.g. range, aoe, target type
 	this._toggle = template['toggle'];					//TODO: merge this with above
+	//TODO: cooldown
 };  
 
 Game.Skills.prototype.getSource = function() {
@@ -124,7 +125,61 @@ Game.Skills.Shoot = {
 					if (Math.random() > 0.5 || options['headshot']) {
 						entity.kill();
 					} else {
-						entity.stun();
+						entity.stun(1);
+					}
+					return actions;
+				}
+				return;
+			} else if (tile.blocksMove()) {
+				this._source.modifyNumShots(-1);
+				return actions;
+			}
+		}
+		this._source.modifyNumShots(-1);
+		return actions;
+	}
+};
+
+Game.Skills.Shove = {
+	name: 'Shove',
+	source: 'skill',
+	otherInfo: {
+		cooldown:3
+	},
+	scr: {
+		label: 'Select a direction to shove.',
+		accept: function() {
+			var coords = this.getMapCoords(this._cursor.x, this._cursor.y); //TODO: account for level??
+			coords.l = this._player.getLevel();					
+			this._player.tryAction(this._player.useSkill,'Shoot',coords,{headshot:this.getButtons(1).isToggled()});  //TODO: ewwwwwww
+		},
+	},
+	canUse: function() {
+		return (this._source.getNumShots() > 0);
+	},
+	use: function(target, options) {
+		if (this._source.getX() === target.x && this._source.getY() === target.y) {			
+			return -1;
+		}
+		if (this._source.hasProperty('MakesNoise')) {
+			this._source.makeNoise(6);				//TODO: don't hardcode
+		}
+		options = options || {};
+		//TODO: make this not instakill if can't see enemy
+		var l = this._source.getLevel(), x = this._source.getX(), y = this._source.getY();
+		var line = Game.Calc.getLine(x, y, target.x, target.y, 5);		
+		for (var i = 1; i < line.length; i++)
+		{
+			var entity = this._source.getMap().getEntities().get(l, line[i].x, line[i].y);
+			var tile = this._source.getMap().getTile(l, line[i].x, line[i].y);
+			var actions = (options['headshot']) ? 1 : 0;
+			if (entity) {
+				if (entity !== this._source) {
+					this._source.modifyNumShots(-1);
+					if (Math.random() > 0.5 || options['headshot']) {
+						entity.kill();
+					} else {
+						entity.stun(1);
 					}
 					return actions;
 				}
