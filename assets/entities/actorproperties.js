@@ -24,6 +24,7 @@ Game.ActorProperties.PlayerActor = {
 		var actions = func.apply(this,args);
 		if (actions > -1) {
 			this.decreaseNumActions(actions);
+			this.decreaseSkillCooldowns(1);
 			Game.refreshScreen();
 			if (this.getNumActions() <= 0) { //TODO: this should be better......??????
 				this.getMap().getEngine().unlock();
@@ -197,7 +198,7 @@ Game.ActorProperties.SkillUser = {
 	},
 	useSkill: function(skill) {
 		var args = Array.prototype.slice.call(arguments,1);
-		var actions = 0;
+		var actions = -1;
 		if (typeof skill === 'string') {
 			for (var i = 0; i < this._skills.length; i++) {
 				if (skill === this._skills[i].getName()) {
@@ -213,7 +214,7 @@ Game.ActorProperties.SkillUser = {
 	},
 	_learnStartingSkills: function() {
 		for (var i = 0; i < this._skills.length; i++) {
-			this._skills[i] = new Game.Skills(this, this._skills[i]);
+			this._skills[i] = new Game.Skill(this, this._skills[i]);
 		}
 	},
 	_applySkillPassives: function() {
@@ -230,6 +231,14 @@ Game.ActorProperties.SkillUser = {
 			}
 		}
 	},
+	decreaseSkillCooldowns: function(num) {
+		num = num || 1;
+		for (var i = 0; i < this._skills.length; i++) {
+			if (this._skills[i].getCooldown() !== undefined && this._skills[i].getCooldown() > 0) {
+				this._skills[i].decCooldownTimer(num);
+			}
+		}
+	}
 };
 
 Game.ActorProperties.ZombieHearing = {
@@ -241,7 +250,7 @@ Game.ActorProperties.ZombieHearing = {
 	events: {
 		hearNoise: function(l,x,y) {
 			this._lastSoundHeard = {l:l, x:x, y:y};
-			if (!this.isAwake()) {
+			if (!this.isAwake() && this._debuffs['stunned'] === 0) {
 				this.wakeUp();
 			}
 		}	
@@ -265,7 +274,7 @@ Game.ActorProperties.Defender = {
 	group: 'Attacker',
 	init: function(properties) {
 		this._hp = properties['hp'] || 1;
-		this._debuffs = {}; 
+		this._debuffs = {stunned: 0}; 
 	},
 	getHP: function() {
 		return this._hp;

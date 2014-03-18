@@ -74,11 +74,20 @@ Game.ScreenButton.ButtonUseSkill = function(scr,skill) {
 	var offsets = scr.getScreenOffsets();
 	var player = scr.getPlayer();
 	var targetScreen = scr.getPlayer().getSkills()[skill].getScreen();
-	if (targetScreen !== undefined) {
-		targetScreen = new Game.Screen.TargetScreen(scr.getPlayer().getSkills()[skill],targetScreen);
-		targetScreen.init(player, player.getX(), player.getY(), offsets);
-		Game.Screen.gameScreen.setSubscreen(targetScreen);
-		Game.refreshScreen();
+	var skill = player.getSkills()[skill];
+	if (targetScreen) {
+		switch (skill.getAimType()) {
+			case 'target':
+				targetScreen = new Game.Screen.TargetScreen(skill,targetScreen);
+				targetScreen.init(player, player.getX(), player.getY(), offsets);
+				break;
+			case 'direction':
+				targetScreen = new Game.Screen.AimDirectionScreen(skill,targetScreen);
+				targetScreen.init(player);
+				break;
+		}
+	Game.Screen.gameScreen.setSubscreen(targetScreen);
+	Game.refreshScreen();
 	} else {
 		player.tryAction(player.useSkill(skill));
 	}

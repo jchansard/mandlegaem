@@ -6,7 +6,7 @@ Game.PlayerActor = {
 	properties: [Game.ActorProperties.PlayerActor, Game.ActorProperties.SkillUser, 
 				Game.ActorProperties.Attacker, Game.ActorProperties.Defender,
 				Game.ActorProperties.Sight,  Game.ActorProperties.MakesNoise],
-	skills: [Game.Skills.Lunge,Game.Skills.Shoot]
+	skills: [Game.Skill.Lunge,Game.Skill.Shoot,Game.Skill.Shove]
 };
 
 //TODO: move this to actor database

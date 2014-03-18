@@ -150,6 +150,21 @@ Game.Entity.prototype.move = function(newL, newX, newY) {
 	this.getMap().updatePosition(this,oldl,oldx,oldy);	//TODO: don't really like this function needing old coordinates
 };
 
+Game.Entity.prototype.knockback = function(dx, dy, length) {
+	var line = Game.Calc.getLine(this._x, this._y, this._x + dx * length, this._y + dy * length);
+	var oldPos = { l: this.getLevel(), x: this.getX(), y: this.getY() };
+	for (var i = 1; i < line.length; i++) {
+		var newPos = {l:this.getLevel(), x:line[i].x, y:line[i].y};
+		if (this.getMap().getEntity(newPos.l, newPos.x, newPos.y) || this.getMap().getTile(newPos.l, newPos.x, newPos.y).blocksMove()) {
+			this.move(oldPos.l, oldPos.x, oldPos.y);
+			return;
+		} else {
+			oldPos = newPos;
+		}
+	}
+	this.move(oldPos.l, oldPos.x, oldPos.y);
+};
+
 //kills the entity
 Game.Entity.prototype.kill = function() {
 	this.getMap().removeEntity(this);

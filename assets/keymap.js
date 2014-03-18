@@ -85,18 +85,10 @@ Game.Keymap.PlayScreen = new Game.Keymap({
 		player.tryAction(player.tryMove,1,-1,0);
 	},
 	button1: function(scr) {
-		scr.getButtons(0).doAction(scr,1);		//TODO: private
-		/*new Game.Screen.TargetScreen({
-				label: 'Select a target.',
-				accept: function() {
-					var coords = this.getMapCoords(this._cursor.x, this._cursor.y); //TODO: account for level??					
-					player.useSkill(1,coords);										//TODO: what if skill1 doesn't require targetting? need to be smarter about this. maybe include the targetscreen in the skill.
-				} 
-		});
-		targetScreen.init(player, player.getX(), player.getY(), offsets);
-		scr.setSubscreen(targetScreen);
-		Game.refreshScreen();*/
-		return;
+		scr.getButtons(0).doAction(scr,1);		
+	},
+	button2: function(scr) {
+		scr.getButtons(1).doAction(scr,2);		
 	}
 });
 
@@ -145,5 +137,61 @@ Game.Keymap.SkillTargetScreen = new Game.Keymap({
 	},
 	button4: function(scr) {
 		scr.getButtons()[3].doAction(scr);
+	}
+});
+
+Game.Keymap.SkillAimDirectionScreen = new Game.Keymap({
+	downleft: function(scr) {
+		scr.acceptSubscreen(-1,1);
+	},
+	down: function(scr) {
+		scr.acceptSubscreen(0,1);
+	},
+	downright: function(scr) {
+		scr.acceptSubscreen(1,1);
+	},
+	left: function(scr) {
+		scr.acceptSubscreen(-1,0);
+	},
+	rest: function(scr) {
+		scr.acceptSubscreen(0,0);
+	},
+	right: function(scr) {
+		scr.acceptSubscreen(1,0);
+	},
+	upleft: function(scr) {
+		scr.acceptSubscreen(-1,-1);
+	},
+	up: function(scr) {
+		scr.acceptSubscreen(0,-1);
+	},
+	upright: function(scr) {
+		scr.acceptSubscreen(1,-1);
+	},
+	enter: function(scr) {
+		Game.Screen.gameScreen.setSubscreen(undefined);
+	},
+	esc: function(scr) {
+		Game.Screen.gameScreen.setSubscreen(undefined);
+	},
+	button1: function(scr) {
+		if (scr.getButtons()[0]) {
+			scr.getButtons()[0].doAction(scr);
+		}
+	},
+	button2: function(scr) {
+		if (scr.getButtons()[1]) {
+			scr.getButtons()[1].doAction(scr);
+		}
+	},
+	button3: function(scr) {
+		if (scr.getButtons()[2]) {
+			scr.getButtons()[2].doAction(scr);
+		}
+	},
+	button4: function(scr) {
+		if (scr.getButtons()[3]) {
+			scr.getButtons()[3].doAction(scr);
+		}
 	}
 });
