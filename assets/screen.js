@@ -95,9 +95,9 @@ Game.Screen.gameScreen = {
 	initButtons: function() {
 		var skills = this._player.getSkills();
 		var keys = ['Z','X','C','V'];				//TODO: don't hardcode
-		for (var i = 1; i < skills.length; i++) { 	//TODO: passives??
+		for (var i = 0; i < skills.length; i++) { 	//TODO: passives??
 			this._buttons.push(new Game.ScreenButton({
-				caption: skills[i].getName() + '(' + keys[i-1] + ')',
+				caption: skills[i].getName() + '(' + keys[i] + ')',
 				FGColor: 'white',
 				BGColor: 'darkslateblue',
 				buttonLength: 18,
