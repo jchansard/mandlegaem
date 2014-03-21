@@ -95,8 +95,8 @@ Game.Skill.Lunge = {
 	},
 };
 
-Game.Skill.Shoot = {
-	name: 'Shoot',
+Game.Skill.QuickShot = {
+	name: 'Quick Shot',
 	source: 'skill',
 	aimType: 'target',
 	initPassive: function(source) {
@@ -111,13 +111,12 @@ Game.Skill.Shoot = {
 	otherInfo: {
 		range: 4,
 	},
-	toggle: ['Normal (0)','Headshot (1)'],			//TODO: don't hardcode actions taken? also allow for more than one toggle?
 	scr: {
 		label: 'Select a target.',
 		accept: function() {
 			var coords = this.getMapCoords(this._cursor.x, this._cursor.y); 
 			coords.l = this._player.getLevel();					
-			this._player.tryAction(this._player.useSkill,'Shoot',coords,{headshot:this.getButtons(1).isToggled()});  //TODO: ewwwwwww
+			this._player.tryAction(this._player.useSkill,'Quick Shot',coords);  //TODO: better way to get name
 		},
 	},
 	canUse: function() {
@@ -138,15 +137,75 @@ Game.Skill.Shoot = {
 		{
 			var entity = this._source.getMap().getEntities().get(l, line[i].x, line[i].y);
 			var tile = this._source.getMap().getTile(l, line[i].x, line[i].y);
-			var actions = (options['headshot']) ? 1 : 0;
+			var actions = 0;
 			if (entity) {
 				if (entity !== this._source) {
 					this._source.modifyNumShots(-1);
-					if (Math.random() > 0.5 || options['headshot']) {
+					if (Math.random() > 0.5) { 
 						entity.kill();
 					} else {
 						entity.stun(1);
 					}
+					return actions;
+				}
+				return;
+			} else if (tile.blocksMove()) {
+				this._source.modifyNumShots(-1);
+				return actions;
+			}
+		}
+		this._source.modifyNumShots(-1);
+		return actions;
+	}
+};
+
+Game.Skill.HeadShot = {
+	name: 'Head Shot',
+	source: 'skill',
+	aimType: 'target',
+	initPassive: function(source) {
+		source._numShots = 12;
+		source.getNumShots = function() {
+			return source._numShots;
+		};
+		source.modifyNumShots = function(num) {
+			source._numShots += num;
+		};
+	},
+	otherInfo: {
+		range: 4,
+	},
+	scr: {
+		label: 'Select a target.',
+		accept: function() {
+			var coords = this.getMapCoords(this._cursor.x, this._cursor.y); 
+			coords.l = this._player.getLevel();					
+			this._player.tryAction(this._player.useSkill,'Head Shot',coords);  //TODO: better way to get name
+		},
+	},
+	canUse: function() {
+		return (this._source.getNumShots() > 0);
+	},
+	use: function(target, options) {
+		if (this._source.getX() === target.x && this._source.getY() === target.y) {			
+			return -1;
+		}
+		if (this._source.hasProperty('MakesNoise')) {
+			this._source.makeNoise(6);				//TODO: don't hardcode
+		}
+		options = options || {};
+		//TODO: make this not instakill if can't see enemy
+		var l = this._source.getLevel(), x = this._source.getX(), y = this._source.getY();
+		var line = Game.Calc.getLine(x, y, target.x, target.y, 5);		
+		for (var i = 1; i < line.length; i++)
+		{
+			var entity = this._source.getMap().getEntities().get(l, line[i].x, line[i].y);
+			var tile = this._source.getMap().getTile(l, line[i].x, line[i].y);
+			var actions = 1;
+			if (entity) {
+				if (entity !== this._source) {
+					this._source.modifyNumShots(-1);
+					entity.kill();
 					return actions;
 				}
 				return;

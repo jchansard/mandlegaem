@@ -3,10 +3,10 @@ Game.PlayerActor = {
     fgcolor: 'white',
     bgcolor: 'none',
 	sightRadius: 4,
-	properties: [Game.ActorProperties.PlayerActor, Game.ActorProperties.SkillUser, 
+	properties: [Game.ActorProperties.PlayerActor, Game.ActorProperties.SkillUser, Game.ActorProperties.Lunger,
 				Game.ActorProperties.Attacker, Game.ActorProperties.Defender,
 				Game.ActorProperties.Sight,  Game.ActorProperties.MakesNoise],
-	skills: [Game.Skill.Lunge,Game.Skill.Shoot,Game.Skill.Shove]
+	skills: [Game.Skill.QuickShot,Game.Skill.HeadShot,Game.Skill.Shove]
 };
 
 //TODO: move this to actor database
