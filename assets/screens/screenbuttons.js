@@ -34,3 +34,10 @@ Game.ScreenButtons.SkillToggleButton = {
 	},
 	action: Game.ScreenButton.ButtonToggle
 };
+
+Game.ScreenButtons.EmptyButton = {
+	caption: '',
+	FGColor: 'black',
+	BGColor: 'black',
+	buttonLength: 18
+};

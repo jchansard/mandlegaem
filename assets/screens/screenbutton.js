@@ -1,6 +1,6 @@
 Game.ScreenButton = function(properties,scrn) {
 	this._screen = scrn;
-	this._caption = properties['caption'];	
+	this._caption = properties['caption'] || '';	
 	this._FGColor = properties['FGColor'] || 'white';
 	this._BGColor = properties['BGColor'] || 'darkslateblue';
 	this._buttonLength = properties['buttonLength'] || 18;
@@ -80,6 +80,7 @@ Game.ScreenButton.ButtonUseSkill = function(scr,skill) {
 			case 'target':
 				targetScreen = new Game.Screen.TargetScreen(skill,targetScreen);
 				targetScreen.init(player, player.getX(), player.getY(), offsets);
+				Game.ScreenButton.ButtonNextTarget(targetScreen);		//TODO: icky?
 				break;
 			case 'direction':
 				targetScreen = new Game.Screen.AimDirectionScreen(skill,targetScreen);

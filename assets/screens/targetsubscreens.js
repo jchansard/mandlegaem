@@ -11,6 +11,8 @@ Game.Screen.TargetScreen = function(skill,template) {
 	this._buttons[3] = new Game.ScreenButton(Game.ScreenButtons.CancelButton, this);
 	if (skill.getToggle() !== undefined) {
 		this._buttons[1] = new Game.ScreenButton(Game.ScreenButtons.SkillToggleButton, this);
+	} else {
+		this._buttons[1] = new Game.ScreenButton(Game.ScreenButtons.EmptyButton,this);
 	}
 };
 Game.Screen.TargetScreen.prototype.getCursor = function() {
