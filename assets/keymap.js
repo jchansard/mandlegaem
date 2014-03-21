@@ -85,9 +85,12 @@ Game.Keymap.PlayScreen = new Game.Keymap({
 		player.tryAction(player.tryMove,1,-1,0);
 	},
 	button1: function(scr) {
-		scr.getButtons(0).doAction(scr,1);		
+		scr.getButtons(0).doAction(scr,0);		
 	},
 	button2: function(scr) {
+		scr.getButtons(1).doAction(scr,1);		
+	},
+	button3: function(scr) {
 		scr.getButtons(1).doAction(scr,2);		
 	}
 });
