@@ -7,6 +7,7 @@ Game.Map = function(numLevels, width, height, player) {
 	this._width = width;
 	this._height = height;
 	this._entities = new Game.Hashmap(3);
+	this._PCEntities = [];
 	this._scheduler = new ROT.Scheduler.Simple();
     this._engine = new ROT.Engine(this._scheduler);
     this._fov = []; 
@@ -34,6 +35,9 @@ Game.Map.prototype.getHeight = function() {
 };
 Game.Map.prototype.getEntities = function() {
 	return this._entities;
+};
+Game.Map.prototype.getPCEntities = function() {
+	return this._PCEntities;
 };
 Game.Map.prototype.getScheduler = function() {
 	return this._scheduler;
@@ -98,6 +102,7 @@ Game.Map.prototype.getEntitiesInRadius = function(radius, l, x, y, options) {
 	var includeCenter = options['includeCenter'];
 	var closestFirst = options['closestFirst'];
 	var visibleOnly = options['visibleOnly'];
+	var hasProp = options['hasProp'];
 	var entities = [];	
 	if (!closestFirst) {
 		for (var key in this._entities) {
@@ -111,7 +116,9 @@ Game.Map.prototype.getEntitiesInRadius = function(radius, l, x, y, options) {
 					entity.getLevel() === l) {
 					if (includeCenter || !(entity.getX() === x && entity.getY() === y)) {
 						if (!visibleOnly || this._visibleTiles.get(entity.getX(),entity.getY())) {
-							entities.push(entity);
+							if (hasProp === undefined || entity.hasProperty(hasProp)) {
+								entities.push(entity);
+							}
 						}
 					}
 				}
@@ -120,7 +127,9 @@ Game.Map.prototype.getEntitiesInRadius = function(radius, l, x, y, options) {
 	}
 	else {								//TODO: this needs work
 		if (includeCenter) {
-			entities.push(this._entities.get(l,x,y));
+			if (hasProp === undefined || entity.hasProperty(hasProp)) {
+				entities.push(this._entities.get(l,x,y));
+			}
 		}
 		for (var r = 1; r <= radius; r++) {
 			for (var yoff = -1*r; yoff <= 1*r; yoff++) {
@@ -128,7 +137,9 @@ Game.Map.prototype.getEntitiesInRadius = function(radius, l, x, y, options) {
 					var entity = this._entities.get(l, x + xoff, y + yoff);
 					if (entity && !(xoff === 0 && yoff === 0) && entities.indexOf(entity) === -1) {
 						if (!visibleOnly || this._visibleTiles.get(entity.getX(),entity.getY())) {
-							entities.push(entity);
+							if (hasProp === undefined || entity.hasProperty(hasProp)) {
+								entities.push(entity);
+							}
 						}	
 					}	
 				}	
@@ -168,6 +179,10 @@ Game.Map.prototype.addEntity = function(entity,l,x,y) {
 	if (entity.hasProperty('PlayerActor')) {
 		this._scheduler.add(entity,true);
 	}
+	if (entity.isPlayerControlled()) {
+		this._PCEntities.push(entity);	
+	}
+	
 };
 
 //adds an entity at a random valid position on level l
@@ -184,6 +199,13 @@ Game.Map.prototype.removeEntity = function(entity) {
 	if (entity.hasProperty('Actor')) {
 		this._scheduler.remove(entity);
 	}
+	if (entity.isPlayerControlled()) {
+		for (var i = 0; i < this._PCEntities.length; i++) {
+			if (this._PCEntities[i] === entity) {
+				this._PCEntities.splice(i,1);
+			}
+		}
+	}
 };
 
 //adds actors from scheduler in a (sightradius*2) radius around the player
@@ -197,7 +219,7 @@ Game.Map.prototype.updateScheduler = function() {
 		var rad = (player.getSightRadius() * 2);
 	}
 	else { rad = 10; };
-	var actors = this.getEntitiesInRadius(rad,pos.l,pos.x,pos.y,{includeCenter:false});
+	var actors = this.getEntitiesInRadius(rad,pos.l,pos.x,pos.y,{includeCenter:false, hasProp:'Actor'});
 	for (var i = 0; i < actors.length; i++) {
 		this._scheduler.add(actors[i]);
 	}
@@ -243,7 +265,7 @@ Game.Map.prototype.isTileExplored = function(l,x,y) {
 
 //returns the background of the displayed glyph at l,x,y
 Game.Map.prototype.calcTransparentBGColor = function(l,x,y) {
-	var entity = this._entities.get(l,x,y)
+	var entity = this._entities.get(l,x,y);
 	if (entity) {
 		var bg = entity.getBGColor();
 	} 
