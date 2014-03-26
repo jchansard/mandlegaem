@@ -4,16 +4,26 @@ Game.Screen.TargetScreen = function(skill,template) {
 	this._label = template['label'];
 	this._keymap = template['keymap'] || Game.Keymap.SkillTargetScreen;
 	this._allowAllTiles = template['allowAllTiles'] || false;
+	this._maxDistance = template['maxDistance'];
 	this.accept = template['accept'];
-	this._buttons = [];
-	this._buttons[0] = new Game.ScreenButton(Game.ScreenButtons.SelectButton, this);
-	this._buttons[2] = new Game.ScreenButton(Game.ScreenButtons.NextTargetButton, this);
-	this._buttons[3] = new Game.ScreenButton(Game.ScreenButtons.CancelButton, this);
-	if (skill.getToggle() !== undefined) {
-		this._buttons[1] = new Game.ScreenButton(Game.ScreenButtons.SkillToggleButton, this);
+	this._buttons = template['buttons'] || [];
+	if (this._buttons.length === 0) {
+		this._buttons[0] = new Game.ScreenButton(Game.ScreenButtons.SelectButton, this);
+		if (this._skill.hasProperty('Toggleable')) {
+			this._buttons[1] = new Game.ScreenButton(Game.ScreenButtons.SkillToggleButton,this);
+		} else { 
+			this._buttons[1] =  new Game.ScreenButton(Game.ScreenButtons.EmptyButton, this);	
+		}
+		this._buttons[2] = new Game.ScreenButton(Game.ScreenButtons.NextTargetButton, this);
+		this._buttons[3] = new Game.ScreenButton(Game.ScreenButtons.CancelButton, this);
 	} else {
-		this._buttons[1] = new Game.ScreenButton(Game.ScreenButtons.EmptyButton,this);
+		for (var i = 0; i < this._buttons.length; i++) {
+			if (this._buttons[i]) {
+				this._buttons[i] = new Game.ScreenButton(this._buttons[i], this);
+			}		
+		}
 	}
+	console.log(this);
 };
 Game.Screen.TargetScreen.prototype.getCursor = function() {
 	return this._cursor;
@@ -28,7 +38,7 @@ Game.Screen.TargetScreen.prototype.init = function(player, x, y, offsets) {
 	this._offsets = offsets;
 	this._start = {x:x - offsets.x, y:y - offsets.y};
 	this._cursor = {x:this._start.x, y:this._start.y};
-	this._availableTargets = this._player.getMap().getEntitiesInRadius(this._skill.getOtherInfo('range'),this._player.getLevel(),this._player.getX(),this._player.getY(),{
+	this._availableTargets = this._player.getMap().getActorsInRadius(this._skill.getOtherInfo('range'),this._player.getLevel(),this._player.getX(),this._player.getY(),{
 					includeCenter: false,
 					closestFirst: true,
 					visibleOnly: true});
@@ -89,11 +99,13 @@ Game.Screen.TargetScreen.prototype.getNextTargetCoords = function() {
 Game.Screen.TargetScreen.prototype.moveCursor = function(dx, dy) {
 	var tiles = this._player.getMap().getVisibleTiles();
 	var coords = this.getMapCoords(this._cursor.x + dx, this._cursor.y + dy);
-	if (this._allowAllTiles || tiles.get(coords.x, coords.y)) {
-		this._cursor = {
-			x: Math.max(0,Math.min(this._cursor.x + dx, Game.getScreenWidth())),
-			y: Math.max(0,Math.min(this._cursor.y + dy, Game.getScreenWidth())) 
-		};		
+	if (this._allowAllTiles || 
+		tiles.get(coords.x, coords.y) || 
+		(this._maxDistance && Game.Calc.getLine(this._player.getX(), this._player.getY(), coords.x, coords.y).length - 1 <= this._maxDistance)) {
+			this._cursor = {
+				x: Math.max(0,Math.min(this._cursor.x + dx, Game.getScreenWidth()-1)),
+				y: Math.max(0,Math.min(this._cursor.y + dy, Game.getScreenHeight()-1)) 
+			};		
 	}	
 };
 

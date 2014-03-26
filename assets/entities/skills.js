@@ -1,4 +1,5 @@
 Game.Skill = function(source,template) {        //TODO: not skills
+	Game.TemplateReader.call(this,template);
 	this._source = source;
 	this._name = template['name'];
 	this._events = template['events'];
@@ -55,7 +56,13 @@ Game.Skill.prototype.getAimType = function() {
 Game.Skill.prototype.setOtherInfo = function(key,value) {
 	this._otherInfo[key] = value;
 };
-
+Game.Skill.prototype.hasProperty = function(property) {
+	if (this._properties[property] !== undefined || this._propertyGroups[property] !== undefined) {
+		return true;
+	} else {
+		return false;
+	}
+};
 
 Game.Skill.Lunge = {
 	name: 'lunge',
@@ -68,7 +75,7 @@ Game.Skill.Lunge = {
 		source._getLungeableTargets = function() {
 		//restricting targets to enemies within sight radius so that you can't lunge things you didn't see the previous turn.
 			var radius = source.getSightRadius(); 
-			var entitiesInSight = source.getMap().getEntitiesInRadius(radius,source._l,source._x,source._y, {includeCenter:false});
+			var entitiesInSight = source.getMap().getActorsInRadius(radius,source._l,source._x,source._y, {includeCenter:false});
 			for (var i = 0; i < entitiesInSight.length; i++) {
 				if (source.canSee(entitiesInSight[i]));
 				source._lungeableTargets.push(entitiesInSight[i]);
@@ -84,7 +91,7 @@ Game.Skill.Lunge = {
 			}
 			var pos = this.getPosition();
 			var map = this.getMap();
-			var target = this.getMap().getEntity(pos.l + dl, pos.x + dx, pos.y + dy);
+			var target = this.getMap().getActor(pos.l + dl, pos.x + dx, pos.y + dy);
 			if (target !== undefined && this._lungeableTargets.indexOf(target) > -1) {
 				console.log('you lunge at the '+target.getName() + '!');
 				target.kill();
@@ -135,7 +142,7 @@ Game.Skill.QuickShot = {
 		var line = Game.Calc.getLine(x, y, target.x, target.y, 5);		
 		for (var i = 1; i < line.length; i++)
 		{
-			var entity = this._source.getMap().getEntities().get(l, line[i].x, line[i].y);
+			var entity = this._source.getMap().getActor(l, line[i].x, line[i].y);
 			var tile = this._source.getMap().getTile(l, line[i].x, line[i].y);
 			var actions = 0;
 			if (entity) {
@@ -199,7 +206,7 @@ Game.Skill.HeadShot = {
 		var line = Game.Calc.getLine(x, y, target.x, target.y, 5);		
 		for (var i = 1; i < line.length; i++)
 		{
-			var entity = this._source.getMap().getEntities().get(l, line[i].x, line[i].y);
+			var entity = this._source.getMap().getActor(l, line[i].x, line[i].y);
 			var tile = this._source.getMap().getTile(l, line[i].x, line[i].y);
 			var actions = 1;
 			if (entity) {
@@ -235,12 +242,12 @@ Game.Skill.Shove = {
 	},
 	use: function(dx, dy) {
 		var pos = this._source.getPosition();
-		var target = this._source.getMap().getEntity(pos.l, pos.x + dx, pos.y + dy);
+		var target = this._source.getMap().getActor(pos.l, pos.x + dx, pos.y + dy);
 		if (target) {
 			target.knockback(dx,dy,1);
 			target.stun(1);
 			var targetNewPos = target.getPosition();
-			var nearbyEnemies = this._source.getMap().getEntitiesInRadius(1, targetNewPos.l, targetNewPos.x, targetNewPos.y, {includeCenter:false, closestFirst:true});
+			var nearbyEnemies = this._source.getMap().getActorsInRadius(1, targetNewPos.l, targetNewPos.x, targetNewPos.y, {includeCenter:false, closestFirst:true});
 			for (var i = 0; i < nearbyEnemies.length; i++) {
 				if (nearbyEnemies[i] !== this._source && nearbyEnemies[i].hasProperty('Defender')) {
 					nearbyEnemies[i].stun(1);
@@ -249,5 +256,53 @@ Game.Skill.Shove = {
 			this.resetCooldownTimer();
 			return 1;
 		} else { return -1; }
+	}
+};
+
+Game.Skill.Flashlight = {
+	name: 'Flashlight',
+	source: 'skill',
+	aimType: 'target',
+	properties: [Game.SkillProperties.HasAmmo, Game.SkillProperties.Toggleable, Game.SkillProperties.CreatesEntity],
+	entityTemplate: Game.SkillEntities.Flashlight,
+	ammo: 50,
+	otherInfo: {
+		range: 4,
+		toggleAction: function(toggle) {
+			if (!this.isToggled()) {
+				this.removeEntity(this._source.getMap());
+			}
+		}
+	},
+	scr: {
+		label: 'Where do you want to aim your flashlight?',
+		accept: function() {
+			var coords = this.getMapCoords(this._cursor.x, this._cursor.y); 
+			coords.l = this._player.getLevel();					
+			this._player.tryAction(this._player.useSkill,'Flashlight',coords);
+		},
+		//buttons: [],//Game.ScreenButtons.SelectButton, Game.ScreenButtons.SkillToggleButton, Game.ScreenButtons.NextTargetButton, Game.ScreenButtons.CancelButton],
+		maxDistance: 6
+	},
+	canUse: function() {
+		return this.getAmmo() > 0;
+	},
+	use: function(target) {
+		this.toggle();
+		var l = this._source.getLevel(), sourceX = this._source.getX(), sourceY = this._source.getY();
+		if (target) {
+			if (this._source.getX() === target.x && this._source.getY() === target.y) {
+				return -1;
+			} else {
+				var l = this._source.getLevel(), sourceX = this._source.getX(), sourceY = this._source.getY();
+				var map = this._source.getMap();
+				if (this._entity !== undefined) {
+					this.removeEntity(map);
+				} 
+				var flashlight = this.createEntity(map, l, target.x, target.y);
+				flashlight.calcInitialOffsets();
+				return 1;
+			} 
+		}
 	}
 };

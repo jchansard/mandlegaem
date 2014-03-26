@@ -8,7 +8,7 @@
 	this._blocksAI = (properties['blocksAI'] !== undefined) ? properties['blocksAI'] : true;
 	this._sightModifier = properties['sightModifier'] || 1;
 	this._actionsToTraverse = properties['actionsToTraverse'] || 1;
-	this._noiseToTraverse = properties['noiseToTraverse'] || 3;
+	this._noiseToTraverse = properties['noiseToTraverse'] || 2;
 };
 Game.Tile.extend(Game.Glyph);
 
@@ -80,7 +80,7 @@ Game.Tile.grassTile = {
 	blocksMove: false,
 	blocksLight: false,
 	blocksAI: false,
-	sightModifier: 0.25
+	sightModifier: 0.34
 };
 Game.Tile.groundTile = {
 	type: 'floor',
@@ -117,5 +117,5 @@ Game.Tile.bloodGrass = {
 	blocksMove: false,
 	blocksLight: false,
 	blocksAI: false,
-	sightModifier: 0.25,	
+	sightModifier: 0.34,	
 };

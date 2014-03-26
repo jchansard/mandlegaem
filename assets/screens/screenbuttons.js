@@ -26,12 +26,12 @@ Game.ScreenButtons.CancelButton = {
 
 Game.ScreenButtons.SkillToggleButton = {
 	caption: function() {
-		return this._screen.getSkill().getToggle()[0];
+		return 'Turn off';
+		//return (this._screen.getSkill().isToggled()) ? 'Turn off' : 'Turn on';
 	},	
-	isToggle: true,
-	toggleCaption: function() {
-		return this._screen.getSkill().getToggle()[1];
-	},
+	FGColor: 'white',
+	BGColor: 'darkslateblue',  
+	buttonLength: 18,
 	action: Game.ScreenButton.ButtonToggle
 };
 

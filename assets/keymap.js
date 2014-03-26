@@ -92,6 +92,9 @@ Game.Keymap.PlayScreen = new Game.Keymap({
 	},
 	button3: function(scr) {
 		scr.getButtons(1).doAction(scr,2);		
+	},
+	button4: function(scr) {
+		scr.getButtons(1).doAction(scr,3);		
 	}
 });
 

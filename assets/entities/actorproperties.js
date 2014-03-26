@@ -25,6 +25,7 @@ Game.ActorProperties.PlayerActor = {
 		if (actions > -1) {
 			this.decreaseNumActions(actions);
 			this.decreaseSkillCooldowns(1);
+			this.decreaseAmmoForConstantSkills(1);
 			Game.refreshScreen();
 			if (this.getNumActions() <= 0) { //TODO: this should be better......??????
 				this.getMap().getEngine().unlock();
@@ -98,9 +99,17 @@ Game.ActorProperties.ZombieActor = {
 	},
 	wakeUp: function() {
 		console.log(this.getName() + ' has noticed you');
-		if (this.canSee(this.getMap().getPlayer())) {
-			this._goalInUndeath = this.getMap().getPlayer().getPosition();
-		} else {
+		var map = this.getMap();
+		var player = map.getPlayer(), pcentities = map.getPCEntities();
+		if (this.canSee(player)) {
+			this._goalInUndeath = player.getPosition();
+		} else if (pcentities.length > 0) {
+			for (var i = 0; i < pcentities.length; i++) {
+				if (this.canSee(pcentities[i])) {
+					this._goalInUndeath = pcentities[i].getPosition();
+				}
+			}
+		} else 	{
 			this._goalInUndeath = this._lastSoundHeard;
 		}
 		this.setBGColor('gold');
@@ -123,7 +132,7 @@ Game.ActorProperties.ZombieActor = {
 		} else {
 			var me = this, meL = this.getLevel(), meX = this.getX(); meY = this.getY(); 
 			var path = new ROT.Path.AStar(this._goalInUndeath.x, this._goalInUndeath.y, function(x,y) {
-				var entity = me.getMap().getEntity(meL, x, y);
+				var entity = me.getMap().getActor(meL, x, y);
 				//i guess it checks the tile it's on to start?
 				if (entity && entity !== me) {
 					return false;
@@ -171,8 +180,8 @@ Game.ActorProperties.Sight = {
 		var y2 = entity.getY();
 		
 		//break early if they're not even close to each other
-		var nearbyEntities = this.getMap().getEntitiesInRadius(this.getSightRadius(),l,this._x,this._y,{includeCenter: false});
-		if (nearbyEntities.indexOf(entity) < 0) {
+		var nearbyActors = this.getMap().getActorsInRadius(this.getSightRadius(),l,this._x,this._y,{includeCenter: false});
+		if (nearbyActors.indexOf(entity) < 0) {
 			return false;
 		}
 		
@@ -195,6 +204,9 @@ Game.ActorProperties.SkillUser = {
 		this._skills = properties['skills'];
 		this._learnStartingSkills();
 		this._applySkillPassives();	
+	},
+	getSkills: function() {
+		return this._skills;
 	},
 	useSkill: function(skill) {
 		var args = Array.prototype.slice.call(arguments,1);
@@ -238,6 +250,19 @@ Game.ActorProperties.SkillUser = {
 				this._skills[i].decCooldownTimer(num);
 			}
 		}
+	},
+	decreaseAmmoForConstantSkills: function(num) {
+		num = num || 1;
+		for (var i = 0; i < this._skills.length; i++) {
+			if (this._skills[i].hasProperty('HasAmmo') && this._skills[i].hasProperty('Toggleable')) {
+				if (this._skills[i].isToggled()) {
+					this._skills[i].modifyAmmo(-num);
+					if (this._skills[i].getAmmo() <= 0) {
+						this._skills[i].toggle();
+					}
+				}
+			}
+		}
 	}
 };
 
@@ -259,13 +284,11 @@ Game.ActorProperties.ZombieHearing = {
 
 Game.ActorProperties.MakesNoise = {
 	name: 'MakesNoise',
-	init: function() {
-		this.makeNoise = function(radius) {
-			var entities = this.getMap().getEntitiesInRadius(radius, this._l, this._x, this._y, {includeCenter: false, closestFirst: true, visibleOnly: false});
+	makeNoise: function(radius) {
+			var entities = this.getMap().getActorsInRadius(radius, this._l, this._x, this._y, {includeCenter: false, closestFirst: true, visibleOnly: false});
 			for (var i = 0; i < entities.length; i++) {
 				entities[i].reactToEvent('hearNoise', this._l, this._x, this._y);
-			}
-		};	
+			}	
 	}
 };
 
@@ -330,7 +353,7 @@ Game.ActorProperties.Lunger = {
 		this._getLungeableTargets = function() {
 		//restricting targets to enemies within sight radius so that you can't lunge things you didn't see the previous turn.
 			var radius = this.getSightRadius(); 
-			var entitiesInSight = this.getMap().getEntitiesInRadius(radius,this._l,this._x,this._y, {includeCenter:false});
+			var entitiesInSight = this.getMap().getActorsInRadius(radius,this._l,this._x,this._y, {includeCenter:false});
 			for (var i = 0; i < entitiesInSight.length; i++) {
 				if (this.canSee(entitiesInSight[i]));
 				this._lungeableTargets.push(entitiesInSight[i]);
@@ -346,7 +369,7 @@ Game.ActorProperties.Lunger = {
 			}
 			var pos = this.getPosition();
 			var map = this.getMap();
-			var target = this.getMap().getEntity(pos.l + dl, pos.x + dx, pos.y + dy);
+			var target = this.getMap().getActor(pos.l + dl, pos.x + dx, pos.y + dy);
 			if (target !== undefined && this._lungeableTargets.indexOf(target) > -1) {
 				console.log('you lunge at the '+target.getName() + '!');
 				target.kill();
