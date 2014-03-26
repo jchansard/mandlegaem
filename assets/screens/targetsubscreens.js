@@ -51,8 +51,13 @@ Game.Screen.TargetScreen.prototype.render = function(display) {
 	var line = Game.Calc.getLine(this._start.x, this._start.y, this._cursor.x, this._cursor.y);
 	for (var i = 1; i < line.length; i++) {
 		var coords = this.getMapCoords(line[i].x, line[i].y);
-		var bg = this._player.getMap().calcTransparentBGColor(
-			this._player.getLevel(), coords.x, coords.y);
+		var bg;
+		var map = this._player.getMap(), l = this._player.getLevel();
+		if (map.isTileExplored(l, coords.x, coords.y)) {
+			bg = map.calcTransparentBGColor(this._player.getLevel(), coords.x, coords.y);
+		} else {
+			bg = 'black';
+		}
 		var chr = (i !== line.length - 1) ? '•' : '○';
 		display.draw(line[i].x, line[i].y, chr,'dodgerblue',bg);
 	}
