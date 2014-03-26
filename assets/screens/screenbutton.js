@@ -86,7 +86,7 @@ Game.ScreenButton.ButtonUseSkill = function(scr,skill) {
 	var offsets = scr.getScreenOffsets();
 	var player = scr.getPlayer();
 	var skill = player.getSkills()[skill];
-	var targetScreen = (!skill.hasProperty('Toggleable') || skill.isToggled()) ? undefined : skill.getScreen();
+	var targetScreen = (!skill.hasProperty('Toggleable') || !skill.isToggled()) ? skill.getScreen() : undefined;
 	if (targetScreen) {
 		switch (skill.getAimType()) {
 			case 'target':
