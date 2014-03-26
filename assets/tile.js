@@ -65,7 +65,7 @@ Game.Tile.secretPathTile = {
 	blocksLight: false,
 	blocksSpawn: true,
 	blocksAI: true,
-	sightModifier: 0.25,
+	sightModifier: 0.34,
 	actionsToTraverse: 3,
 	noiseToTraverse: 5
 };
