@@ -27,7 +27,7 @@ Game.Calc = {
                 err -= dy;
                 x1 += sx;
             }
-            if (e2 < dx) {
+            if (e2 <= dx) {
                 err += dx;
                 y1 += sy;
             }
