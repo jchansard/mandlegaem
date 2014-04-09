@@ -291,10 +291,11 @@ Game.Skill.Flashlight = {
 		this.toggle();
 		var l = this._source.getLevel(), sourceX = this._source.getX(), sourceY = this._source.getY();
 		if (target) {
+			var line = Game.Calc.getLine(sourceX,sourceY,target.x,target.y,6);
+			target = line[5];
 			if (this._source.getX() === target.x && this._source.getY() === target.y) {
 				return -1;
 			} else {
-				var l = this._source.getLevel(), sourceX = this._source.getX(), sourceY = this._source.getY();
 				var map = this._source.getMap();
 				if (this._entity !== undefined) {
 					this.removeEntity(map);
