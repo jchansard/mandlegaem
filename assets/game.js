@@ -1,54 +1,33 @@
 var Game =  {
-	_display: null,
-	_screenWidth: 120,
-    _screenHeight: 36,
-    _currentScreen: null,
-
 	init: function() {
-        // create rot display object 
-        this._display = new ROT.Display({width: this._screenWidth, height: this._screenHeight + 2}); //TODO: why am i adding 2 just make this mapheight or something
-        //send keyboard input to screens
-        var game = this; 
-        var sendEventsToScreen = function(event) {
-            window.addEventListener(event, function(t) {
-                if (game._currentScreen) {
-                    game._currentScreen.handleInput(event, t);
-                }
-            });
-        };
-        sendEventsToScreen('keydown');
-        sendEventsToScreen('keypress');
+        // create display objects
+        var screens = [];
+    	screens['play'] = {	x: 0, y: 0,	width: 120,	height: 38 };
+    	screens['info'] = {	x: 120,	y: 0, width: 40, height: 38 };
+    	screens['info_flashlight'] = {x : 122, y: 1, width: 38, height: 1};
+    	screens['action'] = { x: 0,	y: 38, width: 160, height: 12 };
+    	screens['full'] = {	x: 0, y: 0,	width: 160,	height: 50 };
+    	
+        this.display = new Game.Display({width: 160, height: 50}, screens);
+        this.display.drawTools.init();
+        $('#game').append(this.display.getDisplay().getContainer());
+        this.display.changeScreen(Game.Screen.startScreen);
+
+        /*
+        this.playScreen = new Game.Display({width: 120, height: 38});
+        this.infoScreen = new Game.Display({width: 40, height: 38});
+        this.actionScreen = new Game.Display({width: 160, height: 12});
+        this.fullScreen = new Game.Display({width: 160, height: 50});
+        */
     },
-	getDisplay: function() {
-		return this._display;
-	},
-	getScreenWidth: function() {
-    return this._screenWidth;
-	},
-	getScreenHeight: function() {
-	    return this._screenHeight;
-	},
-	getCurrentScreen: function() {
-		return this._currentScreen;
-	},
-    refreshScreen: function() {
-        // clear the screen and re-render it
-        this._display.clear();
-        this._currentScreen.render(this._display);
-    },
-	changeScreen: function(screen) {
-        this.getDisplay().clear();
-        // enter and render passed screen
-        this._currentScreen = screen;
-        if (!this._currentScreen !== null) {
-            this._currentScreen.enter();
-            this.refreshScreen();
-        }
-    }
 };
 
-window.onload = function() {
-        Game.init();
-        document.body.appendChild(Game.getDisplay().getContainer());
-        Game.changeScreen(Game.Screen.startScreen);
-};    
+$(document).ready(function() {
+	
+        Game.init();     
+
+        /*$('#play').append(Game.playScreen.getDisplay().getContainer());
+        $('#info').append(Game.infoScreen.getDisplay().getContainer());
+        $('#action').append(Game.actionScreen.getDisplay().getContainer());
+		$('#fullscreen').append(Game.fullScreen.getDisplay().getContainer());*/
+});    

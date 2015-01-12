@@ -63,7 +63,7 @@ Game.ScreenButton.prototype.setBGColor = function(color) {
 Game.ScreenButton.prototype.setFGColor = function(color) {
 	this._FGColor = color;
 };
-Game.ScreenButton.prototype.draw = function(display,x,y) {
+Game.ScreenButton.prototype.draw = function(display, scr, x, y) {
 	var paddedCaption = this.getCaption(this);
 	if (this._isToggle) {
 		if (this._toggled) {
@@ -79,7 +79,7 @@ Game.ScreenButton.prototype.draw = function(display,x,y) {
 	}
 	var c1 = ROT.Color.toHex(ROT.Color.interpolate(ROT.Color.fromString(this._BGColor),[0,0,0],0.5));
 	var c2 = ROT.Color.toHex(ROT.Color.interpolate(ROT.Color.fromString(this._BGColor),[0,0,0],0.25));
-	display.drawText(x, y, '%c{' + this._FGColor + '}%b{' + c1 + '}[%b{' + c2 + '} %b{' + this._BGColor + '}' + paddedCaption + '%b{' + c2 + '} ' + '%b{' + c1 + '}]');
+	display.drawText(scr, x, y, '%c{' + this._FGColor + '}%b{' + c1 + '}[%b{' + c2 + '} %b{' + this._BGColor + '}' + paddedCaption + '%b{' + c2 + '} ' + '%b{' + c1 + '}]');
 };
 
 Game.ScreenButton.ButtonUseSkill = function(scr,skill) {

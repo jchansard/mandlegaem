@@ -2,19 +2,25 @@ Game.Screen = {}; //TODO: make this a constructor
 
 Game.Screen.startScreen = {
 	enter: function() { 
-    	return;
+		// whatev nbd
     },
     render: function(display) {
     	
         // TODO: make this purdy
-        display.drawText(55,15, "%c{blue}mandlerlike");
-        display.drawText(55,16, "%c{lightblue}press enter");
+        //Game.screenDraw.drawText('info',55,15, "%c{blue}mandlerlike");
+        //Game.screenDraw.drawText('play',0,0, "%c{blue}mandlerlike");
+        display.drawText('full',70,23, "%c{blue}mandlerlike");
+        display.drawText('full',70,24, "%c{lightblue}press enter");
     },
+    exit: function() {
+		// still nbd
+	},
     handleInput: function(type, data) {
         // go to main game screen if enter is pressed
+        console.log(this._owner);
         if (type === 'keydown') {
             if (data.keyCode === ROT.VK_RETURN) {
-                Game.changeScreen(Game.Screen.gameScreen);
+                Game.display.changeScreen(Game.Screen.gameScreen); //TODO smarter about screen
             }
         }
     }
@@ -27,8 +33,8 @@ Game.Screen.winScreen = {
     render: function(display) {
     	
         // TODO: make this purdy
-        display.drawText(55,15, "%c{blue}WOOOOOHOOOOO");
-        display.drawText(55,16, "%c{lightblue}hey you won!");
+        display.drawText('full', 55,15, "%c{blue}WOOOOOHOOOOO");
+        display.drawText('full', 55,16, "%c{lightblue}hey you won!");
     },
     handleInput: function(type, data) {
         // go to main game screen if enter is pressed
@@ -50,11 +56,44 @@ Game.Screen.gameScreen = {
 		this.initButtons();
 		var numLevels = 1;
 		var width = 300;
-		var height = Game.getScreenHeight();
-		var map = new Game.Map.Forest(numLevels,width,height,this._player); 
+		var height = Game.display.getScreenHeight('play');
+		var map = new Game.Map.Forest(numLevels,width,height,this._player);
 		map.getEngine().start();
+		
+		Game.display.drawASCII('info', 0, 0, AMMO);
 	},
 	render: function(display) {
+		/*
+		var f, g;
+		$.get("assets/ascii/flashlightflat", function(data) { saveFile(data); });
+		function saveFile(data) {
+			f = data;
+			g = new Uint8Array(data);
+			console.log(g);
+		}
+
+		function readTextFile(file)
+{
+    var rawFile = new XMLHttpRequest();
+    rawFile.open('GET', file, true);  
+    rawFile.responseType = 'arraybuffer';
+    rawFile.onload = function (response)
+    {
+      var words = new Uint8Array(rawFile.response);
+       console.log(words[1]);
+      words = pako.inflate(words);
+      console.dir(words);
+      console.log(words.toString());
+
+    };
+    rawFile.send();
+}
+
+    readTextFile("assets/ascii/flashlight.xp");*/
+    
+    	Game.display.drawASCII('info', 0, 0, FLASHLIGHT); 
+    	Game.display.drawASCII('info', 0, 3, AMMO);
+    
 		if (this._subscreen) {
 			this._subscreen.render(display);
 			return;
@@ -72,10 +111,10 @@ Game.Screen.gameScreen = {
 				icons += '%c{#009}▐▌';
 			}
 		}
-		display.drawText(1,36,'actions:' + icons);
+		display.drawText('play',1,36,'actions:' + icons);
 		for (var i = 1; i <= 12; i++) {
 			if (this._player.getNumShots() >= i) {
-				display.draw(23 + (i*2),36,'▀','yellow','red');
+				display.draw('info', 10 + (i*2), 4, '▀', 'yellow', 'red');
 			} else {
 				break;
 			}
@@ -86,11 +125,11 @@ Game.Screen.gameScreen = {
 			if (batlife > 50) { fg = 'green'; }
 			else if (batlife > 25) { fg = 'yellow'; }
 			else { fg = 'red'; }
-			display.draw(58 + (i/10), 36, '█', fg, 'black');
+			display.draw('info_flashlight', 13 + (i/10), 0, '█', fg, 'black');
 		}
-		display.drawText(49,36,'battery:[');
-		display.drawText(68,36,']');
-		display.drawText(16,36,'bullets: ');
+		display.drawText('info_flashlight', 0, 0, 'flashlight: [');
+		display.drawText('info_flashlight', 34, 0,']');
+		display.drawText('info', 1, 4,'bullets: ');
 		
 		this.drawButtons(display, 1, 37);
 	},
@@ -129,8 +168,8 @@ Game.Screen.gameScreen = {
     	var actors = map.getActors();
     	var otherEntities = map.getEntities();
     	var PCEntities = map.getPCEntities();
-    	var screenWidth = Game.getScreenWidth();
-    	var screenHeight = Game.getScreenHeight();
+    	var playAreaWidth = Game.display.getScreenWidth('play');
+    	var playAreaHeight = Game.display.getScreenHeight('play');
     	
 		map.resetVisibleTiles();
         // add all visible tiles to hashmap
@@ -140,11 +179,11 @@ Game.Screen.gameScreen = {
         }
         //player.reactToEvent('calculateFOV');
     	//get the leftmost x coordinate to draw in order to center the player since our map is wider than the screen 
-    	var leftmostX = this.getScreenOffsets().x;
+    	var leftmostX = this.getScreenOffsets('play').x;
     	
     	//draw them tiles
-    	for (var x = leftmostX; x < screenWidth + leftmostX; x++) {
-    		for (var y = 0; y < Math.min(map.getHeight(),screenHeight); y++) {
+    	for (var x = leftmostX; x < playAreaWidth + leftmostX; x++) {
+    		for (var y = 0; y < Math.min(map.getHeight(),playAreaHeight); y++) {
     			var glyph = tiles[l][x][y];
     			var fg,bg,character;
     			if (map.isTileExplored(l,x,y)) {
@@ -184,7 +223,7 @@ Game.Screen.gameScreen = {
 	    				bg = ROT.Color.toHex(ROT.Color.interpolate(ROT.Color.fromString(glyph.getBGColor()),[0,0,0],0.8));
 	    				character = glyph.getChar();
 	    			}
-	    			display.draw(x-leftmostX, y, character, fg, bg);
+	    			display.draw('play',x-leftmostX, y, character, fg, bg);
     			}
     		}
     	}
@@ -200,18 +239,18 @@ Game.Screen.gameScreen = {
 		for (var i = 0; i < buttons.length; i++) {			
 			if (buttons[i] !== undefined) {
 				prevX += (i > 0) ? buttons[i-1].getButtonLength() : 0;
-				buttons[i].draw(display, x + prevX , y);
+				buttons[i].draw(display, 'play', x + prevX , y);
 			}
 		}
 	},
-    getScreenOffsets: function() {
+    getScreenOffsets: function(scr) {
     	var map = this._player.getMap();
     	//but make sure that we don't display offscreen tiles if the player is close to the left border
-    	var leftmostX = Math.max(0,this._player.getX() - (Game.getScreenWidth()/2));
+    	var leftmostX = Math.max(0,this._player.getX() - (Game.display.getScreenWidth(scr)/2));
     	//and make sure that we don't display offscreen tiles if the player is close to the right border
-    	leftmostX = Math.min(leftmostX, map.getWidth() - Game.getScreenWidth());
-    	var topmostY = Math.max(0,this._player.getY() - (Game.getScreenHeight()/2));
-    	topmostY = Math.min(topmostY, map.getHeight() - Game.getScreenHeight());
+    	leftmostX = Math.min(leftmostX, map.getWidth() - Game.display.getScreenWidth(scr));
+    	var topmostY = Math.max(0,this._player.getY() - (Game.display.getScreenHeight(scr)/2));
+    	topmostY = Math.min(topmostY, map.getHeight() - Game.display.getScreenHeight(scr));
     	return {x: leftmostX, y:topmostY};
     },
     getPlayer: function() {

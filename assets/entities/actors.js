@@ -15,7 +15,7 @@ Game.PlayerActor = {
 
 Game.ZombieActor = {
 	name: 'zombie',
-	character: 'z',
+	character: '☻',
 	fgcolor: 'red',
 	bgcolor: 'none',
 	sightRadius:2,

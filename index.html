@@ -2,10 +2,15 @@
 <html>
 	<head>
 		<title>mandlegaem</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	</head>
 	<body>
-        <script src="assets/rot.min.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script src="assets/rot.min.js"></script>   
+        <script src="pako-master/dist/pako.js"></script>     
         <script src="assets/game.js"></script>
+        <script src="assets/display.js" charset="utf-8"></script>
+        <script src="assets/ascii/drawtools.js" charset="utf-8"></script>
 		<script src="assets/keymap.js"></script>
 		<script type="text/javascript" charset="utf-8" src="assets/screen.js"></script>
 		<script type="text/javascript" charset="utf-8" src="assets/screens/screenbutton.js"></script>
@@ -25,5 +30,18 @@
 		<script src="assets/entities/skills.js"></script>
 		<script src="assets/entities/actors.js"></script>        
         <script src="assets/maps/forest.js"></script>
+        
+        <!--
+        <table style="border: 0px; background: #000000" cellpadding="0px" id="gametable">
+        	<tr>
+        		<td style="border:2px solid #FFFFFF" id="play"></td>
+        		<td style="border:2px solid #FFFFFF" id="info"></td>
+        	</tr>
+        	<tr>
+        		<td style="border:2px solid #FFFFFF" colspan="2" id="action"></td>
+        	</tr>
+        </table>
+        <div id="fullscreen" style="background: #000000; position: absolute"></div>-->
+        <div id="game"></div>
 	</body>
 </html>

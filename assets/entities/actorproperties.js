@@ -4,7 +4,7 @@ Game.ActorProperties.PlayerActor = {
 	name: 'PlayerActor',
 	group: 'Actor',
 	act: function() {
-		Game.refreshScreen();
+		Game.display.refreshScreen();
 		this.getMap().getEngine().lock();
 		this._numActions = 3;
 		this.getMap().updateScheduler();
@@ -26,7 +26,7 @@ Game.ActorProperties.PlayerActor = {
 			this.decreaseNumActions(actions);
 			this.decreaseSkillCooldowns(1);
 			this.decreaseAmmoForConstantSkills(1);
-			Game.refreshScreen();
+			Game.display.refreshScreen(); // TODO: eww
 			if (this.getNumActions() <= 0) { //TODO: this should be better......??????
 				this.getMap().getEngine().unlock();
 			}
@@ -127,7 +127,7 @@ Game.ActorProperties.ZombieActor = {
 		}
 		if (this.getMap().getDistanceBetween(this._x, this._y, player.getX(), player.getY()) === 1) {
 			player.kill();
-			Game.refreshScreen();
+			Game.display.refreshScreen();
 			console.log('you died!');
 		} else {
 			var me = this, meL = this.getLevel(), meX = this.getX(); meY = this.getY(); 
