@@ -5,12 +5,16 @@ Game.ActorProperties.PlayerActor = {
 	group: 'Actor',
 	act: function() {
 		Game.display.refreshScreen();
-		this.getMap().getEngine().lock();
-		this._numActions = 3;
+		this.startTurn();
 		this.getMap().updateScheduler();
 	},
 	init: function() {
-		this._numActions = 3;
+		this._numActions = 1;
+		this._panic = 0;
+		this._panicTimer = null;
+		this.getPanic = function() {
+			return this._panic;
+		};
 	},
 	getNumActions: function() {
 		return this._numActions;
@@ -18,6 +22,71 @@ Game.ActorProperties.PlayerActor = {
 	decreaseNumActions: function(n) {
 		this._numActions -= n;
 		//Game.refreshScreen();
+	},
+	startTurn: function() {
+		this.getMap().getEngine().lock();
+		if (this._panicTimer === null) {
+			this.startPanicking();
+		}
+		this._numActions = 1;
+	},
+	endTurn: function() {
+		this.getMap().getEngine().unlock();
+		this.modifyPanic(-5);
+		//this.stopPanicking();
+	},
+	startPanicking: function() {
+		console.log('starting to panic');
+		
+		var panic = function() {
+			var numEnemies = this.getMap().getActorsInRadius(this.getSightRadius(), this.getLevel(), this.getX(), this.getY(), {visibleOnly: true, includeCenter: false}).length;
+			var panicAmount = Math.floor(1 + (numEnemies/2));  
+			this.modifyPanic(panicAmount); 
+			};
+		this._panicTimer = setInterval(panic.bind(this), 150);
+	},
+	stopPanicking: function() {
+		if (this._panicTimer !== null) {
+			clearInterval(this._panicTimer);
+			this._panicTimer = null;
+			/*for (var i = 0; i < this._panicTimers.length; i++)
+			{
+				console.log('stopping timer ' + (i + 1));
+				clearInterval(this._panicTimers[i]);	
+			}*/
+		}
+	},
+	modifyPanic: function(n) {
+		var old = this._panic;
+		if (old + n >= 79) {
+			this._panic = 0;
+			this.sufferFromPanic();
+			//this.stopPanicking();
+			Game.display.updatePanic(0, 79);
+			setTimeout(function() { Game.display.updatePanic(79, -79); }, 100);
+		} else if (old + n < 0) {
+			this._panic = 0;
+			//this.stopPanicking();
+			Game.display.updatePanic(old, -old);
+		} else {
+			this._panic += n;
+			Game.display.updatePanic(this._panic - n, n);
+		}
+		
+	},
+	sufferFromPanic: function() {
+		var x = Game.Calc.randRange(0,2);
+		switch(x) {
+			case 0:
+				console.log('you trip!');
+				break;
+			case 1:
+				console.log('you drop your gun!');
+				break;
+			case 2:
+				console.log('you scream!');
+				break;
+		}
 	},
 	tryAction: function(func) {
 		var args = Array.prototype.slice.call(arguments,1);
@@ -28,7 +97,7 @@ Game.ActorProperties.PlayerActor = {
 			this.decreaseAmmoForConstantSkills(1);
 			Game.display.refreshScreen(); // TODO: eww
 			if (this.getNumActions() <= 0) { //TODO: this should be better......??????
-				this.getMap().getEngine().unlock();
+				this.endTurn();
 			}
 			return true;
 		}
@@ -45,8 +114,16 @@ Game.ActorProperties.ZombieActor = {
 		this._priorities = ['wakeUp','chase','becomeDormant','doNothing'];
 		this._turnsInactive = 0;
 		this._goalInUndeath = false;
+		this._justActed = false;
+		this._fast = template['speed'] || false;
 	},
 	act: function() {
+		if (!this._fast) {
+			if (this._justActed) {
+				this._justActed = false;
+				return;
+			}
+		}
 		if (this.hasProperty('Defender')) {
 			if (this._debuffs['stunned'] > 0) {
 				this._debuffs['stunned']--;
@@ -56,6 +133,7 @@ Game.ActorProperties.ZombieActor = {
 		for (var i = 0; i < this._priorities.length; i++) {
 			if (this.canDo(this._priorities[i])) {
 				this[this._priorities[i]]();
+				this._justActed = true;
 				return;
 			}
 		}

@@ -9,15 +9,14 @@ Game.Screen.startScreen = {
         // TODO: make this purdy
         //Game.screenDraw.drawText('info',55,15, "%c{blue}mandlerlike");
         //Game.screenDraw.drawText('play',0,0, "%c{blue}mandlerlike");
-        display.drawText('full',70,23, "%c{blue}mandlerlike");
-        display.drawText('full',70,24, "%c{lightblue}press enter");
+        display.drawText('full',19,10, "%c{blue}mandlerlike");
+        display.drawText('full',19,11, "%c{lightblue}press enter");	
     },
     exit: function() {
 		// still nbd
 	},
     handleInput: function(type, data) {
         // go to main game screen if enter is pressed
-        console.log(this._owner);
         if (type === 'keydown') {
             if (data.keyCode === ROT.VK_RETURN) {
                 Game.display.changeScreen(Game.Screen.gameScreen); //TODO smarter about screen
@@ -60,7 +59,15 @@ Game.Screen.gameScreen = {
 		var map = new Game.Map.Forest(numLevels,width,height,this._player);
 		map.getEngine().start();
 		
-		Game.display.drawASCII('info', 0, 0, AMMO);
+		Game.display.draw('info', {type: 'text', x: 3.9, y: 1, font: '16px inconsolata', color: 'rgb(64,0,0)', text: '█'});
+		Game.display.draw('info', {type: 'text', x: 4.2, y: 1, font: '16px inconsolata', color: 'white', text: 'Z'});
+		Game.display.draw('info', {type: 'text', x: 8.8, y: 1, font: '16px inconsolata', color: 'rgb(64,0,0)', text: '█'});
+		Game.display.draw('info', {type: 'text', x: 9.1, y: 1, font: '16px inconsolata', color: 'white', text: 'X'});
+		//Game.display.draw('info', {type: 'text', x: 9.2, y: 1, font: '16px inconsolata', text: 'X'});
+		//Game.display.draw('info', {type: 'text', x: 10.2, y: 1, font: '16px inconsolata', text: ']'});
+		
+		//Game.display.drawASCII('info', 0, 0, AMMO);
+		//Game.display.drawASCII('info',0,20, AMMO);
 	},
 	render: function(display) {
 		/*
@@ -91,8 +98,9 @@ Game.Screen.gameScreen = {
 
     readTextFile("assets/ascii/flashlight.xp");*/
     
-    	Game.display.drawASCII('info', 0, 0, FLASHLIGHT); 
+    	/*Game.display.drawASCII('info', 0, 0, FLASHLIGHT); 
     	Game.display.drawASCII('info', 0, 3, AMMO);
+    	Game.display.drawASCII('action',50,0,INFO);*/
     
 		if (this._subscreen) {
 			this._subscreen.render(display);
@@ -111,16 +119,16 @@ Game.Screen.gameScreen = {
 				icons += '%c{#009}▐▌';
 			}
 		}
-		display.drawText('play',1,36,'actions:' + icons);
+		/*display.drawText('play',1,36,'actions:' + icons);
 		for (var i = 1; i <= 12; i++) {
 			if (this._player.getNumShots() >= i) {
 				display.draw('info', 10 + (i*2), 4, '▀', 'yellow', 'red');
 			} else {
 				break;
 			}
-		}
+		}*/	
 		var batlife = skills[3].getAmmo();
-		for (var i = 0; i < batlife; i += 10) {
+		/*for (var i = 0; i < batlife; i += 10) {
 			var fg;
 			if (batlife > 50) { fg = 'green'; }
 			else if (batlife > 25) { fg = 'yellow'; }
@@ -131,7 +139,7 @@ Game.Screen.gameScreen = {
 		display.drawText('info_flashlight', 34, 0,']');
 		display.drawText('info', 1, 4,'bullets: ');
 		
-		this.drawButtons(display, 1, 37);
+		this.drawButtons('action',1, 0);*/ 
 	},
 	handleInput: function(type, data) {	
 		if (this._subscreen) {
@@ -223,12 +231,12 @@ Game.Screen.gameScreen = {
 	    				bg = ROT.Color.toHex(ROT.Color.interpolate(ROT.Color.fromString(glyph.getBGColor()),[0,0,0],0.8));
 	    				character = glyph.getChar();
 	    			}
-	    			display.draw('play',x-leftmostX, y, character, fg, bg);
+	    			display.draw('play',{ x: x-leftmostX, y: y, ch: character, fg: fg, bg: bg });
     			}
     		}
     	}
     },
-	drawButtons: function(display, x, y) {
+	drawButtons: function(area, x, y) {
 		var buttons;
 		if (this._subscreen && this._subscreen.getButtons() !== undefined) {
 			buttons = this._subscreen.getButtons();
@@ -239,7 +247,7 @@ Game.Screen.gameScreen = {
 		for (var i = 0; i < buttons.length; i++) {			
 			if (buttons[i] !== undefined) {
 				prevX += (i > 0) ? buttons[i-1].getButtonLength() : 0;
-				buttons[i].draw(display, 'play', x + prevX , y);
+				buttons[i].draw(area, x + prevX , y);
 			}
 		}
 	},

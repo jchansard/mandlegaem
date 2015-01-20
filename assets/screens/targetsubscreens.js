@@ -23,7 +23,6 @@ Game.Screen.TargetScreen = function(skill,template) {
 			}		
 		}
 	}
-	console.log(this);
 };
 Game.Screen.TargetScreen.prototype.getCursor = function() {
 	return this._cursor;
@@ -59,9 +58,9 @@ Game.Screen.TargetScreen.prototype.render = function(display) {
 			bg = 'black';
 		}
 		var chr = (i !== line.length - 1) ? '•' : '○';
-		display.draw(line[i].x, line[i].y, chr,'dodgerblue',bg);
+		Game.display.draw('play',line[i].x, line[i].y, chr,'dodgerblue',bg);
 	}
-	display.drawText(1,36,this._label); //TODO: robustify
+	Game.display.drawText('play',1,36,this._label); //TODO: robustify
 };
 
 
@@ -69,7 +68,7 @@ Game.Screen.TargetScreen.prototype.handleInput = function(type,data) {
 	if (type === 'keydown') {
 		this._keymap.handleKey(data.keyCode,this);
 	}
-	Game.refreshScreen(); 
+	Game.display.refreshScreen(); 
 };
 
 Game.Screen.TargetScreen.prototype.getMapCoords = function(x,y) {
@@ -108,8 +107,8 @@ Game.Screen.TargetScreen.prototype.moveCursor = function(dx, dy) {
 		tiles.get(coords.x, coords.y) || 
 		(this._maxDistance && Game.Calc.getLine(this._player.getX(), this._player.getY(), coords.x, coords.y).length - 1 <= this._maxDistance)) {
 			this._cursor = {
-				x: Math.max(0,Math.min(this._cursor.x + dx, Game.getScreenWidth()-1)),
-				y: Math.max(0,Math.min(this._cursor.y + dy, Game.getScreenHeight()-1)) 
+				x: Math.max(0,Math.min(this._cursor.x + dx, Game.display.getScreenWidth('play')-1)),
+				y: Math.max(0,Math.min(this._cursor.y + dy, Game.display.getScreenHeight('play')-1)) 
 			};		
 	}	
 };
@@ -142,13 +141,13 @@ Game.Screen.AimDirectionScreen.prototype.render = function(display) {
 	if (this._skill.getCooldownTimer() > 0) {
 		this._label = 'Too tired! Wait ' + this._skill.getCooldownTimer() + ' turn(s).';  //TODO: gross
 	}
-	display.drawText(1,36,this._label); //TODO: robustify
+	Game.display.drawText('play',1,36,this._label); //TODO: robustify
 };
 Game.Screen.AimDirectionScreen.prototype.handleInput = function(type,data) {
 	if (type === 'keydown') {
 		this._keymap.handleKey(data.keyCode,this);
 	}
-	Game.refreshScreen(); 
+	Game.display.refreshScreen(); 
 };
 
 Game.Screen.AimDirectionScreen.prototype.acceptSubscreen = function(dx,dy) {      //TODO: make a whole subscreen class

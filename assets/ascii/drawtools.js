@@ -51,12 +51,14 @@ Game.Display.prototype.drawTools = {
 	    ];
 	    // init templates and template constants
 		this.templates = [];
-		FLASHLIGHT = 0;
-		AMMO = 1;
+		Game.FLASHLIGHT = 0;
+		Game.AMMO = 1;
+		Game.INFO = 2;
 		
 		// add templates from files
-		this._getASCIIFromTextFile('assets/ascii/flashlight.xp', this.templates, FLASHLIGHT);
-		this._getASCIIFromTextFile('assets/ascii/ammunition.xp', this.templates, AMMO);
+		this._getASCIIFromTextFile('assets/ascii/flashlight.xp', this.templates, Game.FLASHLIGHT);
+		this._getASCIIFromTextFile('assets/ascii/ammunition.xp', this.templates, Game.AMMO);
+		this._getASCIIFromTextFile('assets/ascii/info.xp', this.templates, Game.INFO); //TODO: Wait for this to load before continuing
 	},
 	_getASCIIArray: function(bf) {
 		//var bf = this._getASCIIFromTextFile(file); // binary file
@@ -88,7 +90,6 @@ Game.Display.prototype.drawTools = {
 	    {
 	      	bf = pako.inflate(new Uint8Array(rawFile.response));
 	      	draw.templates[index] = draw._getASCIIArray(bf);
-	      	console.dir(bf);
 	    };
     	rawFile.send();
     }

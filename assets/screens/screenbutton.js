@@ -63,7 +63,7 @@ Game.ScreenButton.prototype.setBGColor = function(color) {
 Game.ScreenButton.prototype.setFGColor = function(color) {
 	this._FGColor = color;
 };
-Game.ScreenButton.prototype.draw = function(display, scr, x, y) {
+Game.ScreenButton.prototype.draw = function(area, x, y) {
 	var paddedCaption = this.getCaption(this);
 	if (this._isToggle) {
 		if (this._toggled) {
@@ -79,11 +79,11 @@ Game.ScreenButton.prototype.draw = function(display, scr, x, y) {
 	}
 	var c1 = ROT.Color.toHex(ROT.Color.interpolate(ROT.Color.fromString(this._BGColor),[0,0,0],0.5));
 	var c2 = ROT.Color.toHex(ROT.Color.interpolate(ROT.Color.fromString(this._BGColor),[0,0,0],0.25));
-	display.drawText(scr, x, y, '%c{' + this._FGColor + '}%b{' + c1 + '}[%b{' + c2 + '} %b{' + this._BGColor + '}' + paddedCaption + '%b{' + c2 + '} ' + '%b{' + c1 + '}]');
+	Game.display.drawText(area, x, y, '%c{' + this._FGColor + '}%b{' + c1 + '}[%b{' + c2 + '} %b{' + this._BGColor + '}' + paddedCaption + '%b{' + c2 + '} ' + '%b{' + c1 + '}]');
 };
 
 Game.ScreenButton.ButtonUseSkill = function(scr,skill) {
-	var offsets = scr.getScreenOffsets();
+	var offsets = scr.getScreenOffsets('play');
 	var player = scr.getPlayer();
 	var skill = player.getSkills()[skill];
 	var targetScreen = (!skill.hasProperty('Toggleable') || !skill.isToggled()) ? skill.getScreen() : undefined;
@@ -103,7 +103,7 @@ Game.ScreenButton.ButtonUseSkill = function(scr,skill) {
 	} else {
 		player.tryAction(player.useSkill,skill);
 	}
-	Game.refreshScreen();
+	Game.display.refreshScreen();
 };
 
 Game.ScreenButton.ButtonAccept = function(scr) {
