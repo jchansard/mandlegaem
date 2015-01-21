@@ -25,14 +25,14 @@ Game.ActorProperties.PlayerActor = {
 	},
 	startTurn: function() {
 		this.getMap().getEngine().lock();
+		this._numActions = 1;
+		this.applyAndDecrementDebuffs();
 		if (this._panicTimer === null) {
 			this.startPanicking();
 		}
-		this._numActions = 1;
 	},
 	endTurn: function() {
 		this.getMap().getEngine().unlock();
-		this.modifyPanic(-5);
 		//this.stopPanicking();
 	},
 	startPanicking: function() {
@@ -76,12 +76,16 @@ Game.ActorProperties.PlayerActor = {
 	},
 	sufferFromPanic: function() {
 		var x = Game.Calc.randRange(0,2);
+		x = 1;
 		switch(x) {
 			case 0:
+				this.stun(2); //TODO: redraw!
+				this.applyAndDecrementDebuffs(1); 
 				console.log('you trip!');
 				break;
 			case 1:
-				console.log('you drop your gun!');
+				this.makeNoise(10);
+				console.log('you scream!');
 				break;
 			case 2:
 				console.log('you scream!');
@@ -96,6 +100,7 @@ Game.ActorProperties.PlayerActor = {
 			this.decreaseSkillCooldowns(1);
 			this.decreaseAmmoForConstantSkills(1);
 			Game.display.refreshScreen(); // TODO: eww
+			this.modifyPanic(-5);
 			if (this.getNumActions() <= 0) { //TODO: this should be better......??????
 				this.endTurn();
 			}
@@ -104,6 +109,19 @@ Game.ActorProperties.PlayerActor = {
 		else {
 			return false;
 		}
+	},
+	applyAndDecrementDebuffs: function(decrement) { //TODO: move to defender; have playerstun be different?
+		decrement = decrement || 1;
+		if (this._debuffs['stunned'] > 0) {
+			this._numActions = 0;
+			this._debuffs['stunned'] -= decrement;
+			setTimeout(this.endTurn.bind(this), 500);
+		}
+		if (this._debuffs['stunned'] === 0) {
+			this.setBGColor('none');
+		}
+		
+		
 	}
 };
 
@@ -187,9 +205,13 @@ Game.ActorProperties.ZombieActor = {
 					this._goalInUndeath = pcentities[i].getPosition();
 				}
 			}
-		} else 	{
+		} 
+		// if still no goal, go by sound
+		if (this._goalInUndeath === false && this._lastSoundHeard) {
 			this._goalInUndeath = this._lastSoundHeard;
 		}
+		this.getMap().getScheduler().add(this); //TODO: SCHEDULER should use repeating parameter; shouldn't allow duplicates
+		console.dir(this.getMap().getScheduler());
 		this.setBGColor('gold');
 	},
 	chase: function() {
